@@ -46,15 +46,22 @@ export default function Home(): JSX.Element {
     }, []);
 
     useEffect(() => {
-        const term = searchTerm.toLowerCase();
-        const filteredFreeSlots = slots.filter(slot =>
-            format(slot.start, 'PPPP').toLowerCase().includes(term) ||
-            format(slot.end, 'PPPP').toLowerCase().includes(term)
-        );
-        const filteredEvents = busyTimes.filter(event =>
-            event.summary.toLowerCase().includes(term) ||
-            event.creator.email.toLowerCase().includes(term)
-        );
+        const term = searchTerm.toLowerCase().replace(/[:\s]/g, ''); // Remove colons and spaces
+        const filteredFreeSlots = slots.filter(slot => {
+            const startStr = format(slot.start, 'PPPPp').toLowerCase().replace(/[:\s]/g, '');
+            const endStr = format(slot.end, 'PPPPp').toLowerCase().replace(/[:\s]/g, '');
+            return startStr.includes(term) || endStr.includes(term);
+        });
+        const filteredEvents = busyTimes.filter(event => {
+            const startStr = format(event.start, 'PPPPp').toLowerCase().replace(/[:\s]/g, '');
+            const endStr = format(event.end, 'PPPPp').toLowerCase().replace(/[:\s]/g, '');
+            return (
+                event.summary?.toLowerCase().includes(term) ||
+                event.creator.email?.toLowerCase().includes(term) ||
+                startStr.includes(term) ||
+                endStr.includes(term)
+            );
+        });
 
         setFilteredSlots(filteredFreeSlots);
         setFilteredBusyTimes(filteredEvents);
@@ -83,30 +90,28 @@ export default function Home(): JSX.Element {
             {loading ? (
                 <p>Loading...</p>
             ) : (
-                <div className="space-y-8">
+                <div className="space-y-4">
                     {groupedData.map((group, index) => (
                         <div key={index}>
-                            <h2 className="text-2xl font-bold mb-2">{format(group.date, 'EEEE, MMMM do yyyy')}</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {group.slots.map((slot, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
-                                        onClick={() => bookSlot(slot)}
-                                    >
-                                        <p>{format(slot.start, 'p')} - {format(slot.end, 'p')}</p>
-                                    </div>
-                                ))}
-                                {group.events.map((event, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-4 bg-gray-700 rounded-lg border-l-4 border-red-500"
-                                    >
-                                        <p><strong>Summary:</strong> {event.summary}</p>
-                                        <p><strong>Time:</strong> {format(event.start, 'p')} - {format(event.end, 'p')}</p>
-                                        <p><strong>Creator:</strong> {event.creator.email}</p>
-                                        <p><strong>Description:</strong> {event.description}</p>
-                                    </div>
+                            <h2 className="text-xl font-bold mb-2">{format(group.date, 'EEEE, MMMM do yyyy')}</h2>
+                            <div className="space-y-2">
+                                {group.items.map((item, idx) => (
+                                    'summary' in item ? (
+                                        <div key={idx} className="p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex justify-between items-center">
+                                            <div className="w-4/5">
+                                                <p><strong>Summary:</strong> {item.summary?.length > 50 ? `${item.summary.substring(0, 50)}...` : item.summary}</p>
+                                                <p><strong>Time:</strong> {format(item.start, 'p')} - {format(item.end, 'p')}</p>
+                                                <p><strong>Creator:</strong> {item.creator.email}</p>
+                                                <p><strong>Description:</strong> {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div key={idx} className="p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex justify-between items-center">
+                                            <div className="w-4/5">
+                                                <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>
+                                            </div>
+                                        </div>
+                                    )
                                 ))}
                             </div>
                         </div>

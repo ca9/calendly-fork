@@ -15,22 +15,27 @@ export interface BusyTime {
 }
 
 export const groupByDay = (slots: Slot[], busyTimes: BusyTime[]) => {
-    const grouped: { [key: string]: { date: Date; slots: Slot[]; events: BusyTime[] } } = {};
+    const grouped: { [key: string]: { date: Date; items: (Slot | BusyTime)[] } } = {};
 
     slots.forEach(slot => {
         const dayKey = format(slot.start, 'yyyy-MM-dd');
         if (!grouped[dayKey]) {
-            grouped[dayKey] = { date: slot.start, slots: [], events: [] };
+            grouped[dayKey] = { date: slot.start, items: [] };
         }
-        grouped[dayKey].slots.push(slot);
+        grouped[dayKey].items.push(slot);
     });
 
     busyTimes.forEach(event => {
         const dayKey = format(event.start, 'yyyy-MM-dd');
         if (!grouped[dayKey]) {
-            grouped[dayKey] = { date: event.start, slots: [], events: [] };
+            grouped[dayKey] = { date: event.start, items: [] };
         }
-        grouped[dayKey].events.push(event);
+        grouped[dayKey].items.push(event);
+    });
+
+    // Sort items within each day
+    Object.values(grouped).forEach(group => {
+        group.items.sort((a, b) => a.start.getTime() - b.start.getTime());
     });
 
     return Object.values(grouped);
