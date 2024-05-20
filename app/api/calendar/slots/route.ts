@@ -1,7 +1,6 @@
-// app/api/calendar/slots/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getCalendar } from '@/lib/google';
-import { addDays, eachDayOfInterval, startOfDay, endOfDay, eachMinuteOfInterval, addMinutes, isBefore } from 'date-fns';
+import { addDays, eachDayOfInterval, startOfDay, endOfDay, eachMinuteOfInterval, addMinutes, isBefore, isValid } from 'date-fns';
 import { calendar_v3 } from 'googleapis';
 import { validateToken } from '@/lib/token';
 
@@ -56,7 +55,7 @@ export async function GET(req: NextRequest) {
             description: event.description || '',
             creator: event.creator || {},
             id: event.id || ''
-        }));
+        })).filter(event => isValid(event.start) && isValid(event.end));
 
         busyTimes.push(...eventsList);
 
@@ -65,9 +64,19 @@ export async function GET(req: NextRequest) {
             end: addMinutes(startOfDay(day), parseInt(endHour) * 60),
         }, { step: parseInt(slotDurationMinutes) });
 
+        if (day.getDate() === 24 && day.getMonth() === 4) {
+            console.log('Day Start:', dayStart.toISOString());
+            console.log('Day End:', dayEnd.toISOString());
+            console.log('Potential Slots:', potentialSlots);
+            console.log('Events:', eventsList);
+        }
+
         for (const slot of potentialSlots) {
             const slotEnd = addMinutes(slot, parseInt(slotDurationMinutes));
             if (eventsList.every(({ start, end }) => isBefore(slotEnd, start) || isBefore(end, slot))) {
+                if (day.getDate() === 24 && day.getMonth() === 4) {
+                    console.log({ start: slot, end: slotEnd });
+                }
                 slots.push({ start: slot, end: slotEnd });
             }
         }
