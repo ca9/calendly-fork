@@ -94,11 +94,11 @@ export default function Home(): JSX.Element {
                     {groupedData.map((group, index) => (
                         <div key={index}>
                             <h2 className="text-xl font-bold mb-2">{format(group.date, 'EEEE, MMMM do yyyy')}</h2>
-                            <div className="space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                                 {group.items.map((item, idx) => (
                                     'summary' in item ? (
-                                        <div key={idx} className="p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex justify-between items-center">
-                                            <div className="w-4/5">
+                                        <div key={idx} className="p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start">
+                                            <div className="w-full">
                                                 <p><strong>Summary:</strong> {item.summary?.length > 50 ? `${item.summary.substring(0, 50)}...` : item.summary}</p>
                                                 <p><strong>Time:</strong> {format(item.start, 'p')} - {format(item.end, 'p')}</p>
                                                 <p><strong>Creator:</strong> {item.creator.email}</p>
@@ -106,8 +106,8 @@ export default function Home(): JSX.Element {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div key={idx} className="p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex justify-between items-center">
-                                            <div className="w-4/5">
+                                        <div key={idx} className="p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start">
+                                            <div className="w-full">
                                                 <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>
                                             </div>
                                         </div>
