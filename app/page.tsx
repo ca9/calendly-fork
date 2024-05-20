@@ -92,29 +92,38 @@ export default function Home(): JSX.Element {
             ) : (
                 <div className="space-y-4">
                     {groupedData.map((group, index) => (
-                        <div key={index}>
+                        <div key={index} className="mb-8">
                             <h2 className="text-xl font-bold mb-2">{format(group.date, 'EEEE, MMMM do yyyy')}</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 group">
                                 {group.items.map((item, idx) => (
                                     'summary' in item ? (
-                                        <div key={idx} className="p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start">
-                                            <div className="w-full">
-                                                <p><strong>Summary:</strong> {item.summary?.length > 50 ? `${item.summary.substring(0, 50)}...` : item.summary}</p>
+                                        <div
+                                            key={idx}
+                                            className="relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden group-hover:h-40 transition-all duration-300 ease-in-out hover:h-48 hover:scale-150 hover:z-10 hover:opacity-100"
+                                        >
+                                            <div className="w-full text-sm">
+                                                <p><strong>Summary:</strong> {item.summary}</p>
                                                 <p><strong>Time:</strong> {format(item.start, 'p')} - {format(item.end, 'p')}</p>
                                                 <p><strong>Creator:</strong> {item.creator.email}</p>
-                                                <p><strong>Description:</strong> {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}</p>
+                                                <p><strong>Description:</strong> {item.description}</p>
                                             </div>
+                                            <div className="absolute inset-0 bg-gray-900 opacity-0 transition-opacity duration-300 ease-in-out"></div>
                                         </div>
                                     ) : (
-                                        <div key={idx} className="p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start">
-                                            <div className="w-full">
+                                        <div
+                                            key={idx}
+                                            className="relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden group-hover:h-40 transition-all duration-300 ease-in-out hover:h-48 hover:scale-150 hover:z-10 hover:opacity-100"
+                                        >
+                                            <div className="w-full text-sm">
                                                 <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>
                                             </div>
+                                            <div className="absolute inset-0 bg-gray-900 opacity-0 transition-opacity duration-300 ease-in-out"></div>
                                         </div>
                                     )
                                 ))}
                             </div>
                         </div>
+
                     ))}
                 </div>
             )}
