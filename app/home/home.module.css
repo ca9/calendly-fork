@@ -9,3 +9,59 @@
 .customInput {
     -moz-appearance: textfield; /* Firefox */
 }
+
+
+.customSelectContainer::after {
+    content: '\25BC';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #D1D5DB; /* Tailwind gray-300 */
+}
+
+/* Add this rule to home.module.css to reduce min-height */
+.gridItem {
+    height: fit-content; /* Adjust height as needed */
+    max-height: 50px;
+}
+
+.gridItem:hover {
+    height: fit-content;
+    max-height: 150px;
+ }
+
+.faspinner_style {
+    max-height: 50px;
+    max-width: 50px;
+}
+
+.customSelect {
+    background-color: #1F2937; /* Tailwind gray-800 */
+    color: #D1D5DB; /* Tailwind gray-300 */
+    border: 1px solid #374151; /* Tailwind gray-700 */
+    padding: 8px;
+    border-radius: 4px;
+    appearance: none;
+}
+
+.customSelect::after {
+    content: '\25BC';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #D1D5DB; /* Tailwind gray-300 */
+}
+
+
+.customSelect:focus {
+    outline: none;
+    border-color: #4A5568; /* Tailwind gray-600 */
+}
+.customSelect > option {
+    background-color: #1F2937; /* Tailwind gray-800 */
+    color: #D1D5DB; /* Tailwind gray-300 */
+}

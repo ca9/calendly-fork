@@ -9,6 +9,10 @@ import { Slot, BusyTime, groupByDay, getTimezones, TimezoneOption } from '@/lib/
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+
+
 const timezones = getTimezones().sort((a, b) => a.offset.localeCompare(b.offset));
 const initialTimezone = timezones.find(tz => tz.locations.includes(Intl.DateTimeFormat().resolvedOptions().timeZone))?.offset || 'GMT';
 
@@ -24,6 +28,8 @@ export function Home(): JSX.Element {
     const [endHour, setEndHour] = useState(17);
     const [timezone, setTimezone] = useState(initialTimezone);
     const [isFetching, setIsFetching] = useState(false);
+    const [slotDuration, setSlotDuration] = useState(30);
+    const [customDuration, setCustomDuration] = useState('');
     const router = useRouter();
 
     const fetchSlots = async () => {
@@ -35,6 +41,7 @@ export function Home(): JSX.Element {
                     startHour,
                     endHour,
                     timezone,
+                    slotDuration
                 },
             });
             const parsedSlots = data.slots.map((slot: any) => ({
@@ -64,7 +71,7 @@ export function Home(): JSX.Element {
 
     useEffect(() => {
         fetchSlots();
-    }, [days, startHour, endHour, timezone]);
+    }, [days, startHour, endHour, timezone, slotDuration]);
 
     useEffect(() => {
         const term = searchTerm.toLowerCase().replace(/[:\s]/g, ''); // Remove colons and spaces
@@ -119,6 +126,25 @@ export function Home(): JSX.Element {
         }
     };
 
+    const handleSlotDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        if (value === "custom") {
+            setSlotDuration(-1);
+        } else {
+            setSlotDuration(Number(value));
+        }
+    };
+
+    const handleCustomDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = Number(e.target.value);
+        if (value > 15 && value <= (endHour - startHour) * 60) {
+            setCustomDuration(e.target.value);
+            setSlotDuration(value);
+        } else {
+            toast.error('Custom duration must be over 15 minutes, and smaller than the working hours.');
+        }
+    };
+
     const handleTimezoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedTimezone = e.target.value;
         setTimezone(selectedTimezone);
@@ -131,7 +157,7 @@ export function Home(): JSX.Element {
         <div className="min-h-screen bg-gray-900 text-white p-8">
             <ToastContainer />
             <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
-            {isFetching && <div className="spinner absolute top-4 right-4">Loading...</div>} {/* Spinner */}
+            {isFetching && <div className="absolute top-4 right-4"><FontAwesomeIcon icon={faSpinner} spin /></div>}
             <div className="mb-4 flex flex-wrap space-x-4 items-end">
                 <div>
                     <label className="block mb-2">Number of Days</label>
@@ -139,7 +165,7 @@ export function Home(): JSX.Element {
                         type="number"
                         value={days}
                         onChange={handleDaysChange}
-                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
+                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
                     />
                 </div>
                 <div>
@@ -148,7 +174,7 @@ export function Home(): JSX.Element {
                         type="number"
                         value={startHour}
                         onChange={handleStartHourChange}
-                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
+                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
                     />
                 </div>
                 <div>
@@ -157,22 +183,53 @@ export function Home(): JSX.Element {
                         type="number"
                         value={endHour}
                         onChange={handleEndHourChange}
-                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
+                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
                     />
                 </div>
-                <div className="flex-1">
-                    <label className="block mb-2">Timezone</label>
+                <div>
+                    <label className="block mb-2">Time Slot Duration</label>
                     <select
-                        value={timezone}
-                        onChange={handleTimezoneChange}
-                        className="bg-gray-800 text-white rounded p-2 w-full"
+                        value={slotDuration === -1 ? "custom" : slotDuration}
+                        onChange={handleSlotDurationChange}
+                        className={`${styles.customInput} ${styles.customSelect}`}
                     >
-                        {timezones.map(({ value, label }) => (
-                            <option key={value} value={value}>
-                                {label}
-                            </option>
-                        ))}
+                        <option value={15}>15 minutes</option>
+                        <option value={30}>30 minutes</option>
+                        <option value={45}>45 minutes</option>
+                        <option value={60}>1 hour</option>
+                        <option value={90}>1 hour 30 minutes</option>
+                        <option value={120}>2 hour slots</option>
+                        <option value={180}>2 hour slots</option>
                     </select>
+                </div>
+
+                {slotDuration === -1 && (
+                    <div>
+                        <label className="block mb-2">Custom Duration (minutes)</label>
+                        <input
+                            type="number"
+                            value={customDuration}
+                            onChange={handleCustomDurationChange}
+                            className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
+                        />
+                    </div>
+                )}
+
+                <div className="flex-1">
+                    <label className={`${styles.label} block mb-2`}>Timezone</label>
+                    <div className="relative">
+                        <select
+                            value={timezone}
+                            onChange={handleTimezoneChange}
+                            className={`${styles.customInput} ${styles.customSelect}`}
+                        >
+                            {timezones.map(({ offset, locations }) => (
+                                <option key={offset} value={offset}>
+                                    {`${offset} - ${locations.split(', ').slice(0, 2).join(', ')}${locations.split(', ').length > 2 ? '...' : ''}`}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
             <input
@@ -183,7 +240,7 @@ export function Home(): JSX.Element {
                 onChange={handleSearch}
             />
             {loading ? (
-                <p>Loading...</p>
+                <p>Loading</p>
             ) : (
                 <div className="space-y-4">
                     {groupedData.map((group, index) => (
@@ -194,11 +251,11 @@ export function Home(): JSX.Element {
                                     'summary' in item ? (
                                         <div
                                             key={idx}
-                                            className="relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-125 hover:z-10"
+                                            className={`${styles.gridItem} relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10`}
                                         >
                                             <div className="w-full text-sm">
-                                                <p><strong>Summary:</strong> {item.summary}</p>
                                                 <p><strong>Time:</strong> {format(item.start, 'p')} - {format(item.end, 'p')}</p>
+                                                <p><strong>Summary:</strong> {item.summary}</p>
                                                 <p><strong>Creator:</strong> {item.creator.email}</p>
                                                 <p><strong>Description:</strong> {item.description}</p>
                                             </div>
@@ -206,7 +263,7 @@ export function Home(): JSX.Element {
                                     ) : (
                                         <div
                                             key={idx}
-                                            className="relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-125 hover:z-10"
+                                            className={`${styles.gridItem} relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10`}
                                         >
                                             <div className="w-full text-sm">
                                                 <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>

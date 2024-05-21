@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     if (!parsedToken) return;
 
     const days = parseInt(req.nextUrl.searchParams.get('days') || '14');
-    const slotDurationMinutes = parseInt(req.nextUrl.searchParams.get('duration') || SLOT_DURATION_MINUTES.toString());
+    const slotDurationMinutes = parseInt(req.nextUrl.searchParams.get('slotDuration') || SLOT_DURATION_MINUTES.toString());
     const startHour = parseInt(req.nextUrl.searchParams.get('startHour') || '10');
     const endHour = parseInt(req.nextUrl.searchParams.get('endHour') || '17');
     const timezone = req.nextUrl.searchParams.get('timezone') || '+00:00';
