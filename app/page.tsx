@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
-import { Slot, BusyTime, groupByDay } from '@/lib/slot_utilities';
+import { Slot, BusyTime, groupByDay, getTimezones, validateWorkingHours } from '@/lib/slot_utilities';
+
+const timezones = getTimezones();
 
 export default function Home(): JSX.Element {
     const [slots, setSlots] = useState<Slot[]>([]);
@@ -13,37 +15,53 @@ export default function Home(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredSlots, setFilteredSlots] = useState<Slot[]>([]);
     const [filteredBusyTimes, setFilteredBusyTimes] = useState<BusyTime[]>([]);
+    const [days, setDays] = useState(14);
+    const [startHour, setStartHour] = useState(10);
+    const [endHour, setEndHour] = useState(17);
+    const [timezone, setTimezone] = useState('GMT+00:00');
     const router = useRouter();
 
-    useEffect(() => {
-        const fetchSlots = async () => {
-            try {
-                const { data } = await axios.get('/api/calendar/slots');
-                const parsedSlots = data.slots.map((slot: any) => ({
-                    ...slot,
-                    start: new Date(slot.start),
-                    end: new Date(slot.end),
-                }));
-                const parsedBusyTimes = data.busyTimes.map((event: any) => ({
-                    ...event,
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                }));
-                setSlots(parsedSlots);
-                setBusyTimes(parsedBusyTimes);
-                setFilteredSlots(parsedSlots);
-                setFilteredBusyTimes(parsedBusyTimes);
-                setLoading(false);
-            } catch (error: any) {
-                console.error('Error fetching slots', error);
-                if (error.response && error.response.status === 401) {
-                    window.location.href = '/api/google/auth';
-                }
-            }
-        };
+    const fetchSlots = async () => {
+        if (!validateWorkingHours(startHour, endHour)) {
+            alert('Working Day Start Hour must be less than Working Day End Hour.');
+            return;
+        }
 
+        try {
+            const { data } = await axios.get('/api/calendar/slots', {
+                params: {
+                    days,
+                    startHour,
+                    endHour,
+                    timezone,
+                },
+            });
+            const parsedSlots = data.slots.map((slot: any) => ({
+                ...slot,
+                start: new Date(slot.start),
+                end: new Date(slot.end),
+            }));
+            const parsedBusyTimes = data.busyTimes.map((event: any) => ({
+                ...event,
+                start: new Date(event.start),
+                end: new Date(event.end),
+            }));
+            setSlots(parsedSlots);
+            setBusyTimes(parsedBusyTimes);
+            setFilteredSlots(parsedSlots);
+            setFilteredBusyTimes(parsedBusyTimes);
+            setLoading(false);
+        } catch (error: any) {
+            console.error('Error fetching slots', error);
+            if (error.response && error.response.status === 401) {
+                window.location.href = '/api/google/auth';
+            }
+        }
+    };
+
+    useEffect(() => {
         fetchSlots();
-    }, []);
+    }, [days, startHour, endHour, timezone]);
 
     useEffect(() => {
         const term = searchTerm.toLowerCase().replace(/[:\s]/g, ''); // Remove colons and spaces
@@ -67,12 +85,24 @@ export default function Home(): JSX.Element {
         setFilteredBusyTimes(filteredEvents);
     }, [searchTerm, slots, busyTimes]);
 
-    const bookSlot = async (slot: Slot) => {
-        // Add booking logic here
-    };
-
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
+    };
+
+    const handleDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDays(Number(e.target.value));
+    };
+
+    const handleStartHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setStartHour(Number(e.target.value));
+    };
+
+    const handleEndHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEndHour(Number(e.target.value));
+    };
+
+    const handleTimezoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setTimezone(e.target.value);
     };
 
     const groupedData = groupByDay(filteredSlots, filteredBusyTimes);
@@ -80,10 +110,53 @@ export default function Home(): JSX.Element {
     return (
         <div className="min-h-screen bg-gray-900 text-white p-8">
             <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
+            <div className="mb-4 flex flex-wrap space-x-4 items-end">
+                <div>
+                    <label className="block mb-2">Number of Days</label>
+                    <input
+                        type="number"
+                        value={days}
+                        onChange={handleDaysChange}
+                        className="p-2 rounded bg-gray-800 text-white w-24"
+                    />
+                </div>
+                <div>
+                    <label className="block mb-2">Working Day Start Hour</label>
+                    <input
+                        type="number"
+                        value={startHour}
+                        onChange={handleStartHourChange}
+                        className="p-2 rounded bg-gray-800 text-white w-24"
+                    />
+                </div>
+                <div>
+                    <label className="block mb-2">Working Day End Hour</label>
+                    <input
+                        type="number"
+                        value={endHour}
+                        onChange={handleEndHourChange}
+                        className="p-2 rounded bg-gray-800 text-white w-24"
+                    />
+                </div>
+                <div className="flex-1">
+                    <label className="block mb-2">Timezone</label>
+                    <select
+                        value={timezone}
+                        onChange={handleTimezoneChange}
+                        className="p-2 rounded bg-gray-800 text-white w-full"
+                    >
+                        {timezones.map(({ offset, locations }) => (
+                            <option key={offset} value={offset}>
+                                {`${offset} - ${locations.split(',')[0]}...`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
             <input
                 type="text"
                 placeholder="Search slots or events..."
-                className="mb-4 p-2 rounded bg-gray-800 text-white"
+                className="mb-4 p-2 rounded bg-gray-800 text-white w-full"
                 value={searchTerm}
                 onChange={handleSearch}
             />
@@ -123,7 +196,6 @@ export default function Home(): JSX.Element {
                                 ))}
                             </div>
                         </div>
-
                     ))}
                 </div>
             )}

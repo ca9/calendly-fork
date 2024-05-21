@@ -1,4 +1,5 @@
 import { format, parseISO, isBefore } from 'date-fns';
+import moment from 'moment-timezone';
 
 export interface Slot {
     start: Date;
@@ -13,6 +14,11 @@ export interface BusyTime {
     creator: any;
     id: string;
 }
+
+export const validateWorkingHours = (start: number, end: number) => {
+    return start < end;
+};
+
 
 export const groupByDay = (slots: Slot[], busyTimes: BusyTime[]) => {
     const now = new Date();
@@ -48,3 +54,23 @@ export const groupByDay = (slots: Slot[], busyTimes: BusyTime[]) => {
 
     return sortedGrouped;
 };
+
+export function getTimezones() {
+    const timezones = moment.tz.names();
+    const timezoneMap: { [key: string]: string[] } = {};
+
+    timezones.forEach(tz => {
+        const offset = moment.tz(tz).format('Z');
+        if (!timezoneMap[offset]) {
+            timezoneMap[offset] = [];
+        }
+        timezoneMap[offset].push(tz);
+    });
+
+    const formattedTimezones = Object.entries(timezoneMap).map(([offset, locations]) => ({
+        offset,
+        locations: locations.join(', '),
+    }));
+
+    return formattedTimezones;
+}
