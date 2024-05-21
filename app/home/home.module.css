@@ -1,0 +1,11 @@
+/* home.module.css */
+
+.customInput::-webkit-outer-spin-button,
+.customInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.customInput {
+    -moz-appearance: textfield; /* Firefox */
+}

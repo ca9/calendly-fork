@@ -15,6 +15,11 @@ export interface BusyTime {
     id: string;
 }
 
+export interface TimezoneOption {
+    value: string;
+    label: string;
+}
+
 export const validateWorkingHours = (start: number, end: number) => {
     return start < end;
 };
