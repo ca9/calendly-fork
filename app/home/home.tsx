@@ -1,14 +1,16 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import Select from 'react-select';
 import { toast, ToastContainer } from 'react-toastify';
 import { Slot, BusyTime, groupByDay, getTimezones, TimezoneOption } from '@/lib/slot_utilities';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
 
 const timezones = getTimezones().sort((a, b) => a.offset.localeCompare(b.offset));
+const initialTimezone = timezones.find(tz => tz.locations.includes(Intl.DateTimeFormat().resolvedOptions().timeZone))?.offset || 'GMT';
 
 export function Home(): JSX.Element {
     const [slots, setSlots] = useState<Slot[]>([]);
@@ -20,10 +22,12 @@ export function Home(): JSX.Element {
     const [days, setDays] = useState(14);
     const [startHour, setStartHour] = useState(10);
     const [endHour, setEndHour] = useState(17);
-    const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    const [timezone, setTimezone] = useState(initialTimezone);
+    const [isFetching, setIsFetching] = useState(false);
     const router = useRouter();
 
     const fetchSlots = async () => {
+        setIsFetching(true);
         try {
             const { data } = await axios.get('/api/calendar/slots', {
                 params: {
@@ -53,6 +57,8 @@ export function Home(): JSX.Element {
             if (error.response && error.response.status === 401) {
                 window.location.href = '/api/google/auth';
             }
+        } finally {
+            setIsFetching(false);
         }
     };
 
@@ -113,10 +119,10 @@ export function Home(): JSX.Element {
         }
     };
 
-    const handleTimezoneChange = (selectedOption: TimezoneOption | null) => {
-        if (selectedOption) {
-            setTimezone(selectedOption.value);
-        }
+    const handleTimezoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedTimezone = e.target.value;
+        setTimezone(selectedTimezone);
+        fetchSlots(); // Trigger fetch on timezone change
     };
 
     const groupedData = groupByDay(filteredSlots, filteredBusyTimes);
@@ -125,6 +131,7 @@ export function Home(): JSX.Element {
         <div className="min-h-screen bg-gray-900 text-white p-8">
             <ToastContainer />
             <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
+            {isFetching && <div className="spinner absolute top-4 right-4">Loading...</div>} {/* Spinner */}
             <div className="mb-4 flex flex-wrap space-x-4 items-end">
                 <div>
                     <label className="block mb-2">Number of Days</label>
@@ -155,38 +162,17 @@ export function Home(): JSX.Element {
                 </div>
                 <div className="flex-1">
                     <label className="block mb-2">Timezone</label>
-                    <Select
-                        value={{ value: timezone, label: `${timezone}` }}
+                    <select
+                        value={timezone}
                         onChange={handleTimezoneChange}
-                        options={timezones.map(({ offset, locations }) => ({
-                            value: offset,
-                            label: `${offset} - ${locations.split(', ').slice(0, 2).join(', ')}${locations.split(', ').length > 2 ? '...' : ''}`,
-                        }))}
-                        className="bg-gray-800 text-white rounded"
-                        classNamePrefix="react-select"
-                        styles={{
-                            control: (base) => ({
-                                ...base,
-                                backgroundColor: '#1F2937', // Tailwind gray-800
-                                borderColor: '#374151', // Tailwind gray-700
-                                color: '#D1D5DB', // Tailwind gray-300
-                            }),
-                            menu: (base) => ({
-                                ...base,
-                                backgroundColor: '#1F2937',
-                                color: '#D1D5DB',
-                            }),
-                            singleValue: (base) => ({
-                                ...base,
-                                color: '#D1D5DB',
-                            }),
-                            option: (base, { isFocused }) => ({
-                                ...base,
-                                backgroundColor: isFocused ? '#374151' : '#1F2937',
-                                color: '#D1D5DB',
-                            }),
-                        }}
-                    />
+                        className="bg-gray-800 text-white rounded p-2 w-full"
+                    >
+                        {timezones.map(({ value, label }) => (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
             <input
@@ -208,7 +194,7 @@ export function Home(): JSX.Element {
                                     'summary' in item ? (
                                         <div
                                             key={idx}
-                                            className="relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden group-hover:h-40 transition-all duration-300 ease-in-out hover:h-48 hover:scale-150 hover:z-10 hover:opacity-100"
+                                            className="relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10"
                                         >
                                             <div className="w-full text-sm">
                                                 <p><strong>Summary:</strong> {item.summary}</p>
@@ -216,17 +202,15 @@ export function Home(): JSX.Element {
                                                 <p><strong>Creator:</strong> {item.creator.email}</p>
                                                 <p><strong>Description:</strong> {item.description}</p>
                                             </div>
-                                            <div className="absolute inset-0 bg-gray-900 opacity-0 transition-opacity duration-300 ease-in-out"></div>
                                         </div>
                                     ) : (
                                         <div
                                             key={idx}
-                                            className="relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden group-hover:h-40 transition-all duration-300 ease-in-out hover:h-48 hover:scale-150 hover:z-10 hover:opacity-100"
+                                            className="relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10"
                                         >
                                             <div className="w-full text-sm">
                                                 <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>
                                             </div>
-                                            <div className="absolute inset-0 bg-gray-900 opacity-0 transition-opacity duration-300 ease-in-out"></div>
                                         </div>
                                     )
                                 ))}

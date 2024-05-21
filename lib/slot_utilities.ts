@@ -15,11 +15,6 @@ export interface BusyTime {
     id: string;
 }
 
-export interface TimezoneOption {
-    value: string;
-    label: string;
-}
-
 export const validateWorkingHours = (start: number, end: number) => {
     return start < end;
 };
@@ -60,7 +55,17 @@ export const groupByDay = (slots: Slot[], busyTimes: BusyTime[]) => {
     return sortedGrouped;
 };
 
-export function getTimezones() {
+
+
+export interface TimezoneOption {
+    value: string;
+    label: string;
+    offset: string;
+    locations: string;
+}
+
+
+export function getTimezones(): TimezoneOption[] {
     const timezones = moment.tz.names();
     const timezoneMap: { [key: string]: string[] } = {};
 
@@ -72,9 +77,11 @@ export function getTimezones() {
         timezoneMap[offset].push(tz);
     });
 
-    const formattedTimezones = Object.entries(timezoneMap).map(([offset, locations]) => ({
+    const formattedTimezones: TimezoneOption[] = Object.entries(timezoneMap).map(([offset, locations]) => ({
+        value: offset,
+        label: `${offset} - ${locations.join(', ')}`,
         offset,
-        locations: locations.join(', '),
+        locations: locations.join(', ')
     }));
 
     return formattedTimezones;
