@@ -194,7 +194,7 @@ export function Home(): JSX.Element {
                                     'summary' in item ? (
                                         <div
                                             key={idx}
-                                            className="relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10"
+                                            className="relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-125 hover:z-10"
                                         >
                                             <div className="w-full text-sm">
                                                 <p><strong>Summary:</strong> {item.summary}</p>
@@ -206,7 +206,7 @@ export function Home(): JSX.Element {
                                     ) : (
                                         <div
                                             key={idx}
-                                            className="relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10"
+                                            className="relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-125 hover:z-10"
                                         >
                                             <div className="w-full text-sm">
                                                 <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>
