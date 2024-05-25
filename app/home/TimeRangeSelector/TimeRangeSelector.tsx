@@ -4,7 +4,7 @@ import styles from './TimeRangeSelector.module.scss';
 
 const STEP = 0.25; // quarter: 0.25, half: 0.5, whole: 1
 const DEFAULT_START = 10;
-const DEFAULT_END = 14;
+const DEFAULT_END = 17;
 const ANIMATED = true;
 const SIZE = 240;
 const HOUR24 = false;
