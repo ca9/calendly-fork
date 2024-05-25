@@ -1,0 +1,213 @@
+/* TimeRangeSelector.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@700&display=swap');
+
+.timeRangeSelector {
+    background-color: #ddd;
+    font-family: 'DM Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.fill {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeRangeSelector {
+    --size: 240px;
+    --start-color: #3e5dad;
+    --end-color: #16832d;
+
+    //--radial-color: #43a7cf;
+    --radial-color: #f7b500;
+
+    --bg-color: #fff;
+
+    //--border-color: #555;
+    --border-color: black;
+
+    //--drop-shadow: drop-shadow(0px 4px 0px rgba(0, 0, 0, 0.2));
+    --thickness: 6px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: content-box;
+    user-select: none;
+}
+
+.noAnimation * {
+    transition-duration: 0s !important;
+}
+
+.clock {
+    box-sizing: border-box;
+    width: var(--size);
+    height: var(--size);
+    flex: 0 0 var(--size);
+    border-radius: var(--size);
+    background-color: var(--bg-color);
+    position: relative;
+    border: solid var(--thickness) var(--border-color);
+    overflow: hidden;
+    filter: var(--drop-shadow);
+}
+
+.ticks {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: var(--drop-shadow);
+}
+
+.tick {
+    --length: 12px;
+    position: absolute;
+    width: var(--thickness);
+    height: var(--length);
+    background-color: var(--border-color);
+    border-bottom-left-radius: var(--thickness);
+    border-bottom-right-radius: var(--thickness);
+    transform: rotate(calc(1turn * var(--tick) / 12)) translateY(calc(-0.5 * (var(--size) - var(--length))));
+}
+
+.tickWhole {
+    --length: 20px;
+}
+
+.hands {
+    --thickness: 6px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: var(--drop-shadow);
+}
+
+.hand {
+    --length: calc(var(--size) * 0.5 - 40px);
+    --angle: 0rad;
+    position: absolute;
+    height: var(--length);
+    width: var(--thickness);
+    color: var(--border-color);
+    background-color: currentColor;
+    transform: rotate(var(--angle)) translateY(calc(-50% - var(--thickness)));
+    cursor: pointer;
+    transition: transform .1s;
+    border-top-left-radius: var(--thickness);
+    border-top-right-radius: var(--thickness);
+}
+
+.hand:hover,
+.hand.hover {
+    transform: scale(1.1) rotate(var(--angle)) translateY(calc(-50% - var(--thickness)));
+    z-index: 1;
+}
+
+.hand::before {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, calc(50% + var(--thickness)));
+    width: 16px;
+    height: 16px;
+    border-radius: calc(var(--thickness) * 2);
+    border: solid var(--thickness) currentColor;
+    background-color: transparent;
+}
+
+.hand::after {
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform: scaleX(4);
+}
+
+.handStart {
+    color: var(--start-color);
+}
+
+.handEnd {
+    color: var(--end-color);
+}
+
+.radials {
+    --angle: 0rad;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(var(--angle));
+    transition: --angle .1s;
+}
+
+.radial {
+    --angle: 0rad;
+    --index: 0;
+    position: absolute;
+    transition: --angle .1s;
+    width: calc(50% + var(--index) * 12px);
+    height: calc(50% + var(--index) * 12px);
+    border-radius: var(--size);
+    overflow: hidden;
+    opacity: 0.25;
+    background-image: conic-gradient(var(--radial-color) 0deg, var(--radial-color) var(--angle), transparent var(--angle), transparent 1turn);
+}
+
+.timeRangeSelector {
+    output {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #666;
+        background-color: var(--bg-color);
+        padding: 4px 16px;
+        border: solid var(--thickness) var(--border-color);
+        border-radius: 100px;
+        filter: var(--drop-shadow);
+        display: flex;
+        align-items: center;
+    }
+
+    output > *:not(:first-child) {
+        margin-left: 10px;
+    }
+
+    output time.start {
+        color: var(--start-color);
+    }
+
+    output time.end {
+        color: var(--end-color);
+    }
+}
+
+
