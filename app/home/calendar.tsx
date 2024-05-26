@@ -3,6 +3,7 @@ import moment from 'moment';
 import styles from './home.module.css';
 
 export interface Event {
+    id: string;
     eventName: string;
     calendar: string;
     color: 'green' | 'red';
@@ -150,6 +151,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
             const todaysEvents = events.filter(ev => ev.date.isSame(day, 'day'));
             todaysEvents.forEach(ev => {
                 const evSpan = document.createElement('span');
+                // console.log(ev);
                 evSpan.className = styles[ev.color];
                 element.appendChild(evSpan);
             });

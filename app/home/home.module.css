@@ -210,6 +210,10 @@
     background: rgba(247, 167, 0, 1);
 }
 
+.red {
+    background: rgb(217, 72, 72);
+}
+
 .green {
     background: rgba(153, 198, 109, 1);
 }

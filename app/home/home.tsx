@@ -33,7 +33,6 @@ export function Home(): JSX.Element {
     const [slotDuration, setSlotDuration] = useState(30);
     const [customDuration, setCustomDuration] = useState('');
     const [events, setEvents] = useState<Event[]>([]);
-    const router = useRouter();
 
     const fetchSlots = async () => {
         setIsFetching(true);
@@ -100,16 +99,18 @@ export function Home(): JSX.Element {
 
     useEffect(() => {
         const newEvents: Event[] = [];
-        slots?.forEach(slot => {
+        slots?.forEach((slot, index) => {
             newEvents.push({
+                id: `${moment(slot.start).format('DD-MM-YYYY-HH-mm-ss')}-${index}`, // Unique ID based on date and index
                 eventName: 'Free Slot',
                 calendar: 'Free',
                 color: 'green',
                 date: moment(slot.start)
             });
         });
-        busyTimes?.forEach(busy => {
+        busyTimes?.forEach((busy, index) => {
             newEvents.push({
+                id: `${moment(busy.start).format('DD-MM-YYYY-HH-mm-ss')}-${index}`, // Unique ID based on date and index
                 eventName: busy.summary || 'Busy',
                 calendar: 'Busy',
                 color: 'red',
