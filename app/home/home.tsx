@@ -29,8 +29,29 @@ export function Home(): JSX.Element {
     const [timezone, setTimezone] = useState(initialTimezone);
     const [isFetching, setIsFetching] = useState(false);
     const [slotDuration, setSlotDuration] = useState(30);
+    const [tempSlotDuration, setTempSlotDuration] = useState(30);
     const [customDuration, setCustomDuration] = useState('');
     const [events, setEvents] = useState<Event[]>([]);
+
+    const formatDuration = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours > 0 ? hours + 'h ' : ''}${mins}m`;
+    };
+
+    const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        // do nothing on actual SLOT as this will hammer the API
+        setTempSlotDuration(parseInt(event.target.value));
+        // const target = event.target as HTMLInputElement;
+        // setSlotDuration(parseInt(target.value));
+        // console.log(`Time slot duration set to ${target.value} minutes`);
+    };
+
+    const handleSliderMouseUp = () => {
+        setSlotDuration(tempSlotDuration);
+        // Trigger your API call here
+        console.log(`Time slot duration set to ${tempSlotDuration} minutes`);
+    };
 
     const fetchSlots = async () => {
         setIsFetching(true);
@@ -165,24 +186,6 @@ export function Home(): JSX.Element {
         setEndHour(end);
     }
 
-    // const handleStartHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const value = Number(e.target.value);
-    //     if (value < endHour) {
-    //         setStartHour(value);
-    //     } else {
-    //         toast.error('Working Day Start Hour must be less than Working Day End Hour.');
-    //     }
-    // };
-    //
-    // const handleEndHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const value = Number(e.target.value);
-    //     if (value > startHour) {
-    //         setEndHour(value);
-    //     } else {
-    //         toast.error('Working Day End Hour must be greater than Working Day Start Hour.');
-    //     }
-    // };
-
     const handleSlotDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         if (value === "custom") {
@@ -217,7 +220,8 @@ export function Home(): JSX.Element {
                 <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
                 {isFetching && <div className="absolute top-4 right-4"><FontAwesomeIcon icon={faSpinner} spin/></div>}
                 <div className={styles.grid}>
-                    <div className={styles.clockContainer}>
+                    <div className={`${styles.clockContainer}`}>
+                        {/*<label className="block mb-2"> Working Hours </label>*/}
                         <TimeRangeSelector onTimeChange={handleTimeChange}/>
                     </div>
                     <div className={styles.infoContainer}>
@@ -234,32 +238,19 @@ export function Home(): JSX.Element {
 
                             <div>
                                 <label className="block mb-2">Time Slot Duration</label>
-                                <select
-                                    value={slotDuration === -1 ? "custom" : slotDuration}
-                                    onChange={handleSlotDurationChange}
-                                    className={`${styles.customInput} ${styles.customSelect}`}
-                                >
-                                    <option value={15}>15 minutes</option>
-                                    <option value={30}>30 minutes</option>
-                                    <option value={45}>45 minutes</option>
-                                    <option value={60}>1 hour</option>
-                                    <option value={90}>1 hour 30 minutes</option>
-                                    <option value={120}>2 hour slots</option>
-                                    <option value={180}>3 hour slots</option>
-                                </select>
+                                <input
+                                    type="range"
+                                    className={styles.rangeSlider}
+                                    min="15"
+                                    max="180"
+                                    step="15"
+                                    value={tempSlotDuration}
+                                    onChange={handleSliderChange}
+                                    onMouseUp={handleSliderMouseUp}
+                                    onTouchEnd={handleSliderMouseUp}
+                                />
+                                <span>{formatDuration(tempSlotDuration)}</span>
                             </div>
-
-                            {slotDuration === -1 && (
-                                <div>
-                                    <label className="block mb-2">Custom Duration (minutes)</label>
-                                    <input
-                                        type="number"
-                                        value={customDuration}
-                                        onChange={handleCustomDurationChange}
-                                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
-                                    />
-                                </div>
-                            )}
 
                             <div className="flex-1">
                                 <label className={`${styles.label} block mb-2`}>Timezone</label>
