@@ -178,7 +178,8 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                                     <div className={`${styles.eventCategory} ${styles[event.color]}`}></div>
                                     <span>{event.eventName}</span>
                                     <span className={styles.eventTime}>
-                                        {format(new Date(event.date), 'p')} - {format(new Date(event.endTime), 'p')}
+                                        {format(new Date(event.date), 'hh:mm a')} - {format(new Date(event.endTime), 'hh:mm a')}
+
                                     </span>
                                 </div>
                             ))

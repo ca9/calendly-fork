@@ -1,8 +1,10 @@
 .calendarContainer {
     display: flex;
-    justify-content: center; /* Center align the calendar */
-    align-items: flex-start; /* Align items at the start */
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Albert Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin-top: 20px;
+    flex-wrap: wrap; /* Allow wrapping of flex items */
 }
 
 .details {
@@ -15,6 +17,15 @@
     overflow: auto;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for better look */
 }
+
+.details.in {
+    animation: moveFromTopFade .5s ease both;
+}
+
+.details.out {
+    animation: moveToTopFade .5s ease both;
+}
+
 
 .details h2 {
     text-align: center;
@@ -68,9 +79,6 @@
     border-radius: 4px 4px 0 0;
 }
 
-.week {
-
-}
 
 .calendarHeader h1 {
     margin: 0;
@@ -115,15 +123,14 @@
     width: 100%;
 }
 
+
 .day {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-
-    width: calc(100% / 7); /* Distribute days evenly across the week */
+    justify-content: flex-start;
+    width: calc(100% / 7);
     max-width: 100px;
-
     padding: 10px;
     text-align: center;
     vertical-align: top;
@@ -167,20 +174,21 @@
     list-style: none;
     margin-top: 3px;
     text-align: center;
-    height: 12px;
     line-height: 6px;
-    overflow: hidden;
+    overflow: visible; /* Allow overflow to be visible */
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap to new lines */
+    justify-content: center;
 }
 
 .dayEvents span {
     vertical-align: top;
     display: inline-block;
     padding: 0;
-    margin: 0;
-    width: 5px;
-    height: 5px;
+    margin: 1px; /* Adjust margin to provide spacing between dots */
+    width: 4px;
+    height: 4px;
     line-height: 5px;
-    margin: 0 1px;
 }
 
 .blue {
@@ -203,27 +211,18 @@
     background: rgba(249, 233, 0, 1);
 }
 
-.details {
-    position: relative;
-    width: 420px;
-    height: auto;
-    background: rgba(164, 164, 164, 1);
-    margin-left: 10px; /* Add margin to the right of the calendar */
-    border-radius: 4px;
-    overflow: auto;
-}
-
-.details.in {
-    animation: moveFromTopFade .5s ease both;
-}
-
-.details.out {
-    animation: moveToTopFade .5s ease both;
-}
+/* Selected Day Details */
 
 .selectedDayDetails {
-    margin-bottom: 10px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Ensure it takes full height of the parent */
+    text-align: center; /* Center text */
+    background: rgba(66, 66, 66, 1); /* Match calendar header background */
+    padding: 5px;
+    border-radius: 4px 4px 0 0; /* Rounded corners for the top */
 }
 
 .events {
@@ -457,4 +456,19 @@
     display: inline-block;
     margin: 6px 0 0;
     vertical-align: top;
+}
+
+
+/* Responsive layout for screen widths under 480px */
+@media (max-width: 480px) {
+    .calendarContainer {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items */
+    }
+
+    .details {
+        width: 100%; /* Full width for the details box */
+        margin-left: 0; /* Remove left margin */
+        margin-top: 20px; /* Add top margin for spacing */
+    }
 }
