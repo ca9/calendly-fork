@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
-import styles from './home.module.css';
+import styles from './calendar.module.css';
 
 export interface Event {
     id: string;
     eventName: string;
     calendar: string;
-    color: 'green' | 'red';
+    color: 'green' | 'red' | 'blue' | 'yellow' | 'orange';
     date: moment.Moment;
+    startTime: string;
+    endTime: string;
 }
 
 interface CalendarProps {
@@ -16,7 +18,9 @@ interface CalendarProps {
 }
 
 const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
-    const [current, setCurrent] = useState(moment().date(1));
+    const [current, setCurrent] = useState(moment().startOf('month'));
+    const [selectedDay, setSelectedDay] = useState<moment.Moment | null>(null);
+    const [dayEvents, setDayEvents] = useState<Event[]>([]);
 
     useEffect(() => {
         const el = document.querySelector(selector);
@@ -60,73 +64,43 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
             month.className = `${styles.month} ${styles.new}`;
             el.appendChild(month);
 
-            const weekContainer = document.createElement('div');
-            weekContainer.className = 'week-container';
-            month.appendChild(weekContainer);
+            let startOfMonth = current.clone().startOf('month').startOf('isoWeek'); // Ensure week starts on Monday
+            let endOfMonth = current.clone().endOf('month').endOf('isoWeek'); // Ensure week ends on Sunday
 
-            backFill(weekContainer);
-            currentMonth(weekContainer);
-            forwardFill(weekContainer);
-        };
+            let day = startOfMonth.clone().subtract(1, 'day');
 
-        const backFill = (weekContainer: Element) => {
-            const clone = current.clone();
-            const dayOfWeek = clone.day();
-
-            if (!dayOfWeek) return;
-
-            clone.subtract(dayOfWeek, 'days');
-
-            for (let i = dayOfWeek; i > 0; i--) {
-                drawDay(weekContainer, clone.add(1, 'days'));
+            while (day.isBefore(endOfMonth, 'day')) {
+                day.add(1, 'day');
+                if (day.isoWeekday() === 1) {
+                    const week = document.createElement('div');
+                    week.className = styles.week;
+                    month.appendChild(week);
+                }
+                drawDay(day, month.lastChild as HTMLElement);
             }
         };
 
-        const forwardFill = (weekContainer: Element) => {
-            const clone = current.clone().add(1, 'month').subtract(1, 'day');
-            const dayOfWeek = clone.day();
-
-            if (dayOfWeek === 6) return;
-
-            for (let i = dayOfWeek; i < 6; i++) {
-                drawDay(weekContainer, clone.add(1, 'days'));
-            }
-        };
-
-        const currentMonth = (weekContainer: Element) => {
-            const clone = current.clone();
-
-            while (clone.month() === current.month()) {
-                drawDay(weekContainer, clone);
-                clone.add(1, 'days');
-            }
-        };
-
-        const getWeek = (day: moment.Moment) => {
-            const weekContainer = el.querySelector('.week-container');
-            if (!weekContainer) return;
-
-            let currentWeek = weekContainer.lastElementChild;
-            if (!currentWeek || day.day() === 0) {
-                currentWeek = document.createElement('div');
-                currentWeek.className = styles.week;
-                weekContainer.appendChild(currentWeek);
-            }
-            return currentWeek;
-        };
-
-        const drawDay = (weekContainer: Element, day: moment.Moment) => {
-            const week = getWeek(day);
-
-            if (!week) return;
-
+        const drawDay = (day: moment.Moment, week: Element) => {
             const dayEl = document.createElement('div');
-            dayEl.className = styles.day;
+            const isSelected = selectedDay && selectedDay.isSame(day, 'day');
+            dayEl.className = `${styles.day} ${isSelected ? styles.selectedDay : ''}`;
+
+            // Closure to capture the current `day` value
+            (function(day) {
+                dayEl.addEventListener('click', () => {
+                    console.log(`Day clicked: ${day.format('YYYY-MM-DD')}`);
+                    handleDayClick(day.clone());
+                });
+            })(day.clone());
 
             if (day.month() !== current.month()) {
                 dayEl.classList.add(styles.other);
             } else if (moment().isSame(day, 'day')) {
                 dayEl.classList.add(styles.today);
+            }
+
+            if (!events.some(ev => ev.date.isSame(day, 'day'))) {
+                dayEl.classList.add(styles.noEvents);
             }
 
             const name = document.createElement('div');
@@ -137,13 +111,13 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
             number.className = styles.dayNumber;
             number.innerText = day.format('DD');
 
-            const events = document.createElement('div');
-            events.className = styles.dayEvents;
-            drawEvents(day, events);
+            const eventsEl = document.createElement('div');
+            eventsEl.className = styles.dayEvents;
+            drawEvents(day, eventsEl);
 
             dayEl.appendChild(name);
             dayEl.appendChild(number);
-            dayEl.appendChild(events);
+            dayEl.appendChild(eventsEl);
             week.appendChild(dayEl);
         };
 
@@ -151,24 +125,71 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
             const todaysEvents = events.filter(ev => ev.date.isSame(day, 'day'));
             todaysEvents.forEach(ev => {
                 const evSpan = document.createElement('span');
-                // console.log(ev);
                 evSpan.className = styles[ev.color];
                 element.appendChild(evSpan);
             });
         };
 
         const nextMonth = () => {
+            console.log('Next month clicked');
             setCurrent(current.clone().add(1, 'month'));
+            setSelectedDay(null); // Unselect the day when navigating
+            setDayEvents([]); // Clear events when navigating
         };
 
         const prevMonth = () => {
+            console.log('Previous month clicked');
             setCurrent(current.clone().subtract(1, 'month'));
+            setSelectedDay(null); // Unselect the day when navigating
+            setDayEvents([]); // Clear events when navigating
+        };
+
+        const handleDayClick = (day: moment.Moment) => {
+            if (selectedDay && selectedDay.isSame(day, 'day')) {
+                setSelectedDay(null); // Unselect if the same day is clicked
+                setDayEvents([]); // Clear events
+            } else {
+                setSelectedDay(day);
+                const todaysEvents = events.filter(ev => ev.date.isSame(day, 'day'));
+                setDayEvents(todaysEvents);
+                // console.log(`Selected day events:`, todaysEvents);
+            }
         };
 
         draw();
-    }, [selector, events, current]);
+    }, [selector, events, current, selectedDay]);
 
-    return <div id={selector.substring(1)}></div>;
+    const totalFreeSlots = dayEvents.filter(event => event.calendar === 'Free Slot').length;
+
+    return (
+        <div className={styles.calendarContainer}>
+            <div id={selector.substring(1)}></div>
+            {selectedDay && (
+                <div className={styles.details}>
+                    <div className={styles.arrow}></div>
+                    <div className={styles.selectedDayDetails}>
+                        <h2>{selectedDay.format('MMMM Do YYYY')}</h2>
+                        <p>Total Free Slots: {totalFreeSlots}</p>
+                    </div>
+                    <div className={styles.events}>
+                        {dayEvents.length > 0 ? (
+                            dayEvents.map(event => (
+                                <div key={event.id} className={styles.event}>
+                                    <div className={`${styles.eventCategory} ${styles[event.color]}`}></div>
+                                    <span>{event.eventName}</span>
+                                    <span className={styles.eventTime}>{event.startTime} - {event.endTime}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className={styles.event}>
+                                <span>No Events</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default Calendar;
