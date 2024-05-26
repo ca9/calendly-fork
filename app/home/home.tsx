@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { toast, ToastContainer } from 'react-toastify';
 import Calendar from './calendar';
 import { Event } from './calendar';
-import moment from 'moment';
+// import moment from 'moment';
 import { Slot, BusyTime, groupByDay, getTimezones, TimezoneOption } from '@/lib/slot_utilities';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
@@ -97,24 +97,29 @@ export function Home(): JSX.Element {
         setFilteredBusyTimes(filteredEvents);
     }, [searchTerm, slots, busyTimes]);
 
+    // Inside your useEffect
     useEffect(() => {
         const newEvents: Event[] = [];
+        console.log("slots", slots);
         slots?.forEach((slot, index) => {
             newEvents.push({
-                id: `${moment(slot.start).format('DD-MM-YYYY-HH-mm-ss')}-${index}`, // Unique ID based on date and index
+                id: `${format(new Date(slot.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
                 eventName: 'Free Slot',
                 calendar: 'Free',
                 color: 'green',
-                date: moment(slot.start)
+                date: new Date(slot.start),
+                endTime: new Date(slot.end)
             });
         });
+        console.log("busy times", busyTimes);
         busyTimes?.forEach((busy, index) => {
             newEvents.push({
-                id: `${moment(busy.start).format('DD-MM-YYYY-HH-mm-ss')}-${index}`, // Unique ID based on date and index
+                id: `${format(new Date(busy.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
                 eventName: busy.summary || 'Busy',
                 calendar: 'Busy',
                 color: 'red',
-                date: moment(busy.start)
+                date: new Date(busy.start),
+                endTime: new Date(busy.end)
             });
         });
         setEvents(newEvents);

@@ -8,12 +8,14 @@
     max-height: 150px;
 }
 
+.calendarBox {
+    border-radius: 4px;
+}
+
 .calendarContainer {
-    transform: translate3d(0, 0, 0);
-    width: 420px;
-    margin: 0 auto;
-    height: auto;
-    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    font-family: 'Albert Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .calendarHeader {
@@ -57,36 +59,12 @@
 
 .month {
     opacity: 0;
-}
-
-.month.new {
     animation: fadeIn 1s ease-out;
-    opacity: 1;
-}
-
-.month.in.next {
-    animation: moveFromTopFadeMonth .4s ease-out;
-    opacity: 1;
-}
-
-.month.out.next {
-    animation: moveToTopFadeMonth .4s ease-in;
-    opacity: 1;
-}
-
-.month.in.prev {
-    animation: moveFromBottomFadeMonth .4s ease-out;
-    opacity: 1;
-}
-
-.month.out.prev {
-    animation: moveToBottomFadeMonth .4s ease-in;
     opacity: 1;
 }
 
 .week {
     display: flex;
-    flex-direction: row;
     background: #4A4A4A;
     width: 100%;
 }
@@ -96,7 +74,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     width: calc(100% / 7); /* Distribute days evenly across the week */
+    max-width: 100px;
+
     padding: 10px;
     text-align: center;
     vertical-align: top;
@@ -108,7 +89,6 @@
 
 .day.other {
     color: rgba(255, 255, 255, .3);
-    background: rgba(255, 192, 203, 0.3); /* Light pink for other months' days */
 }
 
 .day.today {
@@ -182,8 +162,9 @@
     width: 420px;
     height: auto;
     background: rgba(164, 164, 164, 1);
-    margin-top: 5px;
+    margin-left: 10px; /* Add margin to the right of the calendar */
     border-radius: 4px;
+    overflow: auto;
 }
 
 .details.in {
@@ -192,19 +173,6 @@
 
 .details.out {
     animation: moveToTopFade .5s ease both;
-}
-
-.arrow {
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    margin-left: -2px;
-    width: 0px;
-    height: 0px;
-    border-style: solid;
-    border-width: 0 5px 5px 5px;
-    border-color: transparent transparent rgba(164, 164, 164, 1) transparent;
-    transition: all 0.7s ease;
 }
 
 .selectedDayDetails {
