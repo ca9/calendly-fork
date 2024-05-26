@@ -1,6 +1,6 @@
 'use client';
 
-import { Home } from './home/home';
+import Home from './home/home';
 import TimeRangeSelector from "@/app/home/TimeRangeSelector/TimeRangeSelector";
 import React from "react";
 

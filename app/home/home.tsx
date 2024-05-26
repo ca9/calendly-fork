@@ -5,13 +5,15 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { toast, ToastContainer } from 'react-toastify';
+import Calendar from './calendar';
+import { Event } from './calendar';
+import moment from 'moment';
 import { Slot, BusyTime, groupByDay, getTimezones, TimezoneOption } from '@/lib/slot_utilities';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-
 
 const timezones = getTimezones().sort((a, b) => a.offset.localeCompare(b.offset));
 const initialTimezone = timezones.find(tz => tz.locations.includes(Intl.DateTimeFormat().resolvedOptions().timeZone))?.offset || 'GMT';
@@ -30,6 +32,7 @@ export function Home(): JSX.Element {
     const [isFetching, setIsFetching] = useState(false);
     const [slotDuration, setSlotDuration] = useState(30);
     const [customDuration, setCustomDuration] = useState('');
+    const [events, setEvents] = useState<Event[]>([]);
     const router = useRouter();
 
     const fetchSlots = async () => {
@@ -94,6 +97,27 @@ export function Home(): JSX.Element {
         setFilteredSlots(filteredFreeSlots);
         setFilteredBusyTimes(filteredEvents);
     }, [searchTerm, slots, busyTimes]);
+
+    useEffect(() => {
+        const newEvents: Event[] = [];
+        slots?.forEach(slot => {
+            newEvents.push({
+                eventName: 'Free Slot',
+                calendar: 'Free',
+                color: 'green',
+                date: moment(slot.start)
+            });
+        });
+        busyTimes?.forEach(busy => {
+            newEvents.push({
+                eventName: busy.summary || 'Busy',
+                calendar: 'Busy',
+                color: 'red',
+                date: moment(busy.start)
+            });
+        });
+        setEvents(newEvents);
+    }, [slots, busyTimes]);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -199,7 +223,7 @@ export function Home(): JSX.Element {
                         <option value={60}>1 hour</option>
                         <option value={90}>1 hour 30 minutes</option>
                         <option value={120}>2 hour slots</option>
-                        <option value={180}>3 hour slots</option>
+                        <option value={180}>2 hour slots</option>
                     </select>
                 </div>
 
@@ -242,40 +266,10 @@ export function Home(): JSX.Element {
             {loading ? (
                 <p>Loading</p>
             ) : (
-                <div className="space-y-4">
-                    {groupedData.map((group, index) => (
-                        <div key={index} className="mb-8">
-                            <h2 className="text-xl font-bold mb-2">{format(group.date, 'EEEE, MMMM do yyyy')}</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 group">
-                                {group.items.map((item, idx) => (
-                                    'summary' in item ? (
-                                        <div
-                                            key={idx}
-                                            className={`${styles.gridItem} relative p-2 bg-gray-700 rounded-lg border-l-4 border-red-500 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10`}
-                                        >
-                                            <div className="w-full text-sm">
-                                                <p><strong>Time:</strong> {format(item.start, 'p')} - {format(item.end, 'p')}</p>
-                                                <p><strong>Summary:</strong> {item.summary}</p>
-                                                <p><strong>Creator:</strong> {item.creator.email}</p>
-                                                <p><strong>Description:</strong> {item.description}</p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            key={idx}
-                                            className={`${styles.gridItem} relative p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 flex flex-col justify-between items-start h-32 overflow-hidden transition-all duration-300 ease-in-out hover:scale-150 hover:z-10`}
-                                        >
-                                            <div className="w-full text-sm">
-                                                <p>{format(item.start, 'p')} - {format(item.end, 'p')}</p>
-                                            </div>
-                                        </div>
-                                    )
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <Calendar selector="#calendar" events={events} />
             )}
         </div>
     );
 }
+
+export default Home;
