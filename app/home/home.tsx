@@ -199,7 +199,7 @@ export function Home(): JSX.Element {
                         <option value={60}>1 hour</option>
                         <option value={90}>1 hour 30 minutes</option>
                         <option value={120}>2 hour slots</option>
-                        <option value={180}>2 hour slots</option>
+                        <option value={180}>3 hour slots</option>
                     </select>
                 </div>
 
