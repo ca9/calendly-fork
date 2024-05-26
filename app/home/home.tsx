@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import TimeRangeSelector from "@/app/home/TimeRangeSelector/TimeRangeSelector";
 
 const timezones = getTimezones().sort((a, b) => a.offset.localeCompare(b.offset));
 const initialTimezone = timezones.find(tz => tz.locations.includes(Intl.DateTimeFormat().resolvedOptions().timeZone))?.offset || 'GMT';
@@ -204,6 +205,7 @@ export function Home(): JSX.Element {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white p-8">
+            <TimeRangeSelector />
             <ToastContainer />
             <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
             {isFetching && <div className="absolute top-4 right-4"><FontAwesomeIcon icon={faSpinner} spin /></div>}
