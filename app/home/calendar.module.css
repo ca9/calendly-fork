@@ -397,3 +397,64 @@
 
 
 
+/* Add pink background and fade out effect for dates outside the current month */
+.day.other {
+    color: rgba(255, 255, 255, .3);
+    background: rgba(255, 182, 193, 0.2); /* Light pink background */
+    opacity: 0.5;
+}
+
+.day.other:hover {
+    background: rgba(255, 182, 193, 0.5); /* Darker pink on hover */
+}
+
+.week:last-child {
+    border-radius: 0 0 4px 4px;
+}
+
+/* Add rounded edges for the first and last days of the last week */
+.week:last-child .day:first-child {
+    border-bottom-left-radius: 4px;
+}
+.week:last-child .day:last-child {
+    border-bottom-right-radius: 4px;
+}
+
+/* Center align "Total Free Slots" */
+.eventsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px; /* Adjust as needed */
+    background: rgba(66, 66, 66, 1); /* Match calendar header background */
+    border-radius: 4px 4px 0 0; /* Rounded corners for the top */
+}
+
+/* Adjust event item styling */
+.event {
+    display: flex;
+    justify-content: space-between; /* Ensure time floats right */
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: .5px;
+    padding: 5px 16px;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #4A4A4A; /* Match the calendar background */
+    border-radius: 0 0 4px 4px; /* Rounded corners for the bottom */
+}
+
+.eventTime {
+    margin-left: auto; /* Ensure the time floats to the right */
+    font-size: 14px;
+    color: rgba(255, 255, 255, .7);
+    font-family: 'DM Mono', monospace;
+}
+
+.eventCategory {
+    height: 10px;
+    width: 10px;
+    display: inline-block;
+    margin: 6px 0 0;
+    vertical-align: top;
+}
