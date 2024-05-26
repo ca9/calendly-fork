@@ -1,6 +1,7 @@
 // TimeRangeSelector.tsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './TimeRangeSelector.module.scss';
+import {logging} from "googleapis/build/src/apis/logging";
 
 const STEP = 0.25; // quarter: 0.25, half: 0.5, whole: 1
 const DEFAULT_START = 10;
@@ -9,12 +10,32 @@ const ANIMATED = true;
 const SIZE = 240;
 const HOUR24 = false;
 
-const onChange = (start: number, end: number) => {
-    console.log('Time change', start, end);
-};
+interface TimeRangeSelectorProps {
+    onTimeChange?: (start: number, end: number) => void;
+    onChange?: (start: number, end: number) => void;
+}
 
-const TimeRangeSelector: React.FC = () => {
+const onChangeDefault = (start: number, end: number, logging= false) => {
+    if (logging) {
+        console.log('Default onChangePartial:', start, end);
+    }
+}
+
+const onTimeChangeDefault = (start: number, end: number, logging= false) => {
+    if (logging) {
+        console.log('Default onFullTimeChange:', start, end);
+    }
+}
+
+const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = (
+    {
+        onTimeChange = (start, end) => { onTimeChangeDefault(start, end, true) },
+        onChange = onChangeDefault
+    }
+) => {
     const clockRef = useRef<HTMLDivElement>(null);
+    const [startTime, setStartTime] = useState(DEFAULT_START);
+    const [endTime, setEndTime] = useState(DEFAULT_END);
 
     useEffect(() => {
         if (!clockRef.current) return;
@@ -66,12 +87,12 @@ const TimeRangeSelector: React.FC = () => {
         const hands = {
             start: {
                 dragging: false,
-                angle: 0,
+                angle: (DEFAULT_START / 12) * Math.PI * 2,
                 $el: null as HTMLDivElement | null,
             },
             end: {
                 dragging: false,
-                angle: 0,
+                angle: (DEFAULT_END / 12) * Math.PI * 2,
                 $el: null as HTMLDivElement | null,
             },
         };
@@ -135,6 +156,9 @@ const TimeRangeSelector: React.FC = () => {
                 hands[key as keyof typeof hands].dragging = false;
                 hands[key as keyof typeof hands].$el?.classList.remove(styles.hover);
             });
+            const startTime = (hands.start.angle / (Math.PI * 2)) * 12;
+            const endTime = (hands.end.angle / (Math.PI * 2)) * 12;
+            onTimeChange(startTime, endTime);
         };
 
         const onMove = (e: MouseEvent | TouchEvent) => {

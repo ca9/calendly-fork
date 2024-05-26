@@ -81,9 +81,10 @@ export function Home(): JSX.Element {
                     endTime: new Date(busy.end)
                 });
             });
-            console.log("refetch complete");
+
+            // console.log("refetch complete: ", newEvents);
             setEvents(newEvents);
-            console.log("events set in home");
+
             setLoading(false);
         } catch (error: any) {
             console.error('Error fetching slots', error);

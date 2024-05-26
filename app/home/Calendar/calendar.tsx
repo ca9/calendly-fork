@@ -25,7 +25,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
         const el = document.querySelector(selector);
         if (!el) return;
 
-        console.log("events inside calendar", events);
+        // console.log("events inside calendar", events);
 
         const draw = () => {
             clearCalendar(el);
@@ -174,7 +174,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
 
     useEffect(() => {
         const totalFreeSlots = dayEvents.filter(event => event.calendar === 'Free').length;
-        console.log(`Total Free Slots: ${totalFreeSlots}`);
+        // console.log(`Total Free Slots: ${totalFreeSlots}`);
     }, [dayEvents]);
 
     return (
