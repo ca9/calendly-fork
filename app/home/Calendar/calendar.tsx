@@ -199,7 +199,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                             ))
                         ) : (
                             <div className={styles.event}>
-                                <span>No Events</span>
+                                <span>No Events / Beyond Scheduling Range </span>
                             </div>
                         )}
                     </div>
