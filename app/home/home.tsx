@@ -2,16 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { toast, ToastContainer } from 'react-toastify';
 import Calendar from './calendar';
 import { Event } from './calendar';
-// import moment from 'moment';
-import { Slot, BusyTime, groupByDay, getTimezones, TimezoneOption } from '@/lib/slot_utilities';
+import { Slot, BusyTime, groupByDay, getTimezones } from '@/lib/slot_utilities';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
@@ -46,12 +43,12 @@ export function Home(): JSX.Element {
                     slotDuration
                 },
             });
-            const parsedSlots = data.slots.map((slot: any) => ({
+            const parsedSlots = data.slots.map((slot: Slot) => ({
                 ...slot,
                 start: new Date(slot.start),
                 end: new Date(slot.end),
             }));
-            const parsedBusyTimes = data.busyTimes.map((event: any) => ({
+            const parsedBusyTimes = data.busyTimes.map((event: BusyTime) => ({
                 ...event,
                 start: new Date(event.start),
                 end: new Date(event.end),
@@ -60,6 +57,32 @@ export function Home(): JSX.Element {
             setBusyTimes(parsedBusyTimes);
             setFilteredSlots(parsedSlots);
             setFilteredBusyTimes(parsedBusyTimes);
+
+            // Update events state
+            const newEvents: Event[] = [];
+            parsedSlots.forEach((slot:Slot, index:number) => {
+                newEvents.push({
+                    id: `${format(new Date(slot.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
+                    eventName: 'Free Slot',
+                    calendar: 'Free',
+                    color: 'green',
+                    date: new Date(slot.start),
+                    endTime: new Date(slot.end)
+                });
+            });
+            parsedBusyTimes.forEach((busy:BusyTime, index:number) => {
+                newEvents.push({
+                    id: `${format(new Date(busy.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
+                    eventName: busy.summary || 'Busy',
+                    calendar: 'Busy',
+                    color: 'red',
+                    date: new Date(busy.start),
+                    endTime: new Date(busy.end)
+                });
+            });
+            console.log("refetch complete");
+            setEvents(newEvents);
+            console.log("events set in home");
             setLoading(false);
         } catch (error: any) {
             console.error('Error fetching slots', error);
@@ -95,13 +118,10 @@ export function Home(): JSX.Element {
 
         setFilteredSlots(filteredFreeSlots);
         setFilteredBusyTimes(filteredEvents);
-    }, [searchTerm, slots, busyTimes]);
 
-    // Inside your useEffect
-    useEffect(() => {
+        // Update events state based on search results
         const newEvents: Event[] = [];
-        console.log("slots", slots);
-        slots?.forEach((slot, index) => {
+        filteredFreeSlots.forEach((slot, index) => {
             newEvents.push({
                 id: `${format(new Date(slot.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
                 eventName: 'Free Slot',
@@ -111,8 +131,7 @@ export function Home(): JSX.Element {
                 endTime: new Date(slot.end)
             });
         });
-        console.log("busy times", busyTimes);
-        busyTimes?.forEach((busy, index) => {
+        filteredEvents.forEach((busy, index) => {
             newEvents.push({
                 id: `${format(new Date(busy.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
                 eventName: busy.summary || 'Busy',
@@ -123,7 +142,7 @@ export function Home(): JSX.Element {
             });
         });
         setEvents(newEvents);
-    }, [slots, busyTimes]);
+    }, [searchTerm, slots, busyTimes]);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, format, isSameDay, isSameMonth, parseISO } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, format, isSameDay, isSameMonth } from 'date-fns';
 import styles from './calendar.module.css';
 
 export interface Event {
@@ -24,6 +24,8 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
     useEffect(() => {
         const el = document.querySelector(selector);
         if (!el) return;
+
+        console.log("events inside calendar", events);
 
         const draw = () => {
             clearCalendar(el);
@@ -160,7 +162,20 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
         draw();
     }, [selector, events, current, selectedDay]);
 
-    const totalFreeSlots = dayEvents.filter(event => event.calendar === 'Free').length;
+    // Additional useEffect to update dayEvents when events or selectedDay change
+    useEffect(() => {
+        if (selectedDay) {
+            const todaysEvents = events.filter(ev => isSameDay(ev.date, selectedDay));
+            setDayEvents(todaysEvents);
+        } else {
+            setDayEvents([]);
+        }
+    }, [events, selectedDay]);
+
+    useEffect(() => {
+        const totalFreeSlots = dayEvents.filter(event => event.calendar === 'Free').length;
+        console.log(`Total Free Slots: ${totalFreeSlots}`);
+    }, [dayEvents]);
 
     return (
         <div className={styles.calendarContainer}>
@@ -169,7 +184,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                 <div className={styles.details}>
                     <div className={styles.selectedDayDetails}>
                         <h2>{format(selectedDay, 'MMMM do yyyy')}</h2>
-                        <p>Total Free Slots: {totalFreeSlots}</p>
+                        <p>Total Free Slots: {dayEvents.filter(event => event.calendar === 'Free').length}</p>
                     </div>
                     <div className={styles.events}>
                         {dayEvents.length > 0 ? (
@@ -179,7 +194,6 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                                     <span>{event.eventName}</span>
                                     <span className={styles.eventTime}>
                                         {format(new Date(event.date), 'hh:mm a')} - {format(new Date(event.endTime), 'hh:mm a')}
-
                                     </span>
                                 </div>
                             ))
