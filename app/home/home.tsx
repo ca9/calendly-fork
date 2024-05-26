@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import { format } from 'date-fns';
-import { toast, ToastContainer } from 'react-toastify';
+import {format} from 'date-fns';
+import {toast, ToastContainer} from 'react-toastify';
 import Calendar from './Calendar/calendar';
-import { Event } from './Calendar/calendar';
-import { Slot, BusyTime, groupByDay, getTimezones } from '@/lib/slot_utilities';
+import {Event} from './Calendar/calendar';
+import {Slot, BusyTime, groupByDay, getTimezones} from '@/lib/slot_utilities';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import TimeRangeSelector from "@/app/home/TimeRangeSelector/TimeRangeSelector";
 
 const timezones = getTimezones().sort((a, b) => a.offset.localeCompare(b.offset));
@@ -35,7 +35,7 @@ export function Home(): JSX.Element {
     const fetchSlots = async () => {
         setIsFetching(true);
         try {
-            const { data } = await axios.get('/api/calendar/slots', {
+            const {data} = await axios.get('/api/calendar/slots', {
                 params: {
                     days,
                     startHour,
@@ -61,7 +61,7 @@ export function Home(): JSX.Element {
 
             // Update events state
             const newEvents: Event[] = [];
-            parsedSlots.forEach((slot:Slot, index:number) => {
+            parsedSlots.forEach((slot: Slot, index: number) => {
                 newEvents.push({
                     id: `${format(new Date(slot.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
                     eventName: 'Free Slot',
@@ -71,7 +71,7 @@ export function Home(): JSX.Element {
                     endTime: new Date(slot.end)
                 });
             });
-            parsedBusyTimes.forEach((busy:BusyTime, index:number) => {
+            parsedBusyTimes.forEach((busy: BusyTime, index: number) => {
                 newEvents.push({
                     id: `${format(new Date(busy.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
                     eventName: busy.summary || 'Busy',
@@ -159,23 +159,29 @@ export function Home(): JSX.Element {
         }
     };
 
-    const handleStartHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = Number(e.target.value);
-        if (value < endHour) {
-            setStartHour(value);
-        } else {
-            toast.error('Working Day Start Hour must be less than Working Day End Hour.');
-        }
-    };
 
-    const handleEndHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = Number(e.target.value);
-        if (value > startHour) {
-            setEndHour(value);
-        } else {
-            toast.error('Working Day End Hour must be greater than Working Day Start Hour.');
-        }
-    };
+    function handleTimeChange(start: number, end: number) {
+        setStartHour(start);
+        setEndHour(end);
+    }
+
+    // const handleStartHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const value = Number(e.target.value);
+    //     if (value < endHour) {
+    //         setStartHour(value);
+    //     } else {
+    //         toast.error('Working Day Start Hour must be less than Working Day End Hour.');
+    //     }
+    // };
+    //
+    // const handleEndHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const value = Number(e.target.value);
+    //     if (value > startHour) {
+    //         setEndHour(value);
+    //     } else {
+    //         toast.error('Working Day End Hour must be greater than Working Day Start Hour.');
+    //     }
+    // };
 
     const handleSlotDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -206,95 +212,88 @@ export function Home(): JSX.Element {
 
     return (
         <div className="min-h-screen bg-gray-900 text-white p-8">
-            <TimeRangeSelector />
-            <ToastContainer />
-            <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
-            {isFetching && <div className="absolute top-4 right-4"><FontAwesomeIcon icon={faSpinner} spin /></div>}
-            <div className="mb-4 flex flex-wrap space-x-4 items-end">
-                <div>
-                    <label className="block mb-2">Number of Days</label>
-                    <input
-                        type="number"
-                        value={days}
-                        onChange={handleDaysChange}
-                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
-                    />
-                </div>
-                <div>
-                    <label className="block mb-2">Working Day Start Hour</label>
-                    <input
-                        type="number"
-                        value={startHour}
-                        onChange={handleStartHourChange}
-                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
-                    />
-                </div>
-                <div>
-                    <label className="block mb-2">Working Day End Hour</label>
-                    <input
-                        type="number"
-                        value={endHour}
-                        onChange={handleEndHourChange}
-                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
-                    />
-                </div>
-                <div>
-                    <label className="block mb-2">Time Slot Duration</label>
-                    <select
-                        value={slotDuration === -1 ? "custom" : slotDuration}
-                        onChange={handleSlotDurationChange}
-                        className={`${styles.customInput} ${styles.customSelect}`}
-                    >
-                        <option value={15}>15 minutes</option>
-                        <option value={30}>30 minutes</option>
-                        <option value={45}>45 minutes</option>
-                        <option value={60}>1 hour</option>
-                        <option value={90}>1 hour 30 minutes</option>
-                        <option value={120}>2 hour slots</option>
-                        <option value={180}>2 hour slots</option>
-                    </select>
-                </div>
-
-                {slotDuration === -1 && (
-                    <div>
-                        <label className="block mb-2">Custom Duration (minutes)</label>
-                        <input
-                            type="number"
-                            value={customDuration}
-                            onChange={handleCustomDurationChange}
-                            className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
-                        />
+            <ToastContainer/>
+            <div className={styles.container}>
+                <h1 className="text-3xl font-bold mb-4">Available Time Slots</h1>
+                {isFetching && <div className="absolute top-4 right-4"><FontAwesomeIcon icon={faSpinner} spin/></div>}
+                <div className={styles.grid}>
+                    <div className={styles.clockContainer}>
+                        <TimeRangeSelector onTimeChange={handleTimeChange}/>
                     </div>
-                )}
+                    <div className={styles.infoContainer}>
+                        <div className={styles.timeInfo}>
+                            <div>
+                                <label className="block mb-2">Number of Days</label>
+                                <input
+                                    type="number"
+                                    value={days}
+                                    onChange={handleDaysChange}
+                                    className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24 `}
+                                />
+                            </div>
 
-                <div className="flex-1">
-                    <label className={`${styles.label} block mb-2`}>Timezone</label>
-                    <div className="relative">
-                        <select
-                            value={timezone}
-                            onChange={handleTimezoneChange}
-                            className={`${styles.customInput} ${styles.customSelect}`}
-                        >
-                            {timezones.map(({ offset, locations }) => (
-                                <option key={offset} value={offset}>
-                                    {`${offset} - ${locations.split(', ').slice(0, 2).join(', ')}${locations.split(', ').length > 2 ? '...' : ''}`}
-                                </option>
-                            ))}
-                        </select>
+                            <div>
+                                <label className="block mb-2">Time Slot Duration</label>
+                                <select
+                                    value={slotDuration === -1 ? "custom" : slotDuration}
+                                    onChange={handleSlotDurationChange}
+                                    className={`${styles.customInput} ${styles.customSelect}`}
+                                >
+                                    <option value={15}>15 minutes</option>
+                                    <option value={30}>30 minutes</option>
+                                    <option value={45}>45 minutes</option>
+                                    <option value={60}>1 hour</option>
+                                    <option value={90}>1 hour 30 minutes</option>
+                                    <option value={120}>2 hour slots</option>
+                                    <option value={180}>3 hour slots</option>
+                                </select>
+                            </div>
+
+                            {slotDuration === -1 && (
+                                <div>
+                                    <label className="block mb-2">Custom Duration (minutes)</label>
+                                    <input
+                                        type="number"
+                                        value={customDuration}
+                                        onChange={handleCustomDurationChange}
+                                        className={`${styles.customInput} p-2 rounded bg-gray-800 text-white w-24`}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex-1">
+                                <label className={`${styles.label} block mb-2`}>Timezone</label>
+                                <div className="relative">
+                                    <select
+                                        value={timezone}
+                                        onChange={handleTimezoneChange}
+                                        className={`${styles.customInput} ${styles.customSelect}`}
+                                    >
+                                        {timezones.map(({offset, locations}) => (
+                                            <option key={offset} value={offset}>
+                                                {`${offset} - ${locations.split(', ').slice(0, 2).join(', ')}${locations.split(', ').length > 2 ? '...' : ''}`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.searchContainer}>
+                            <input
+                                type="text"
+                                placeholder="Search slots or events..."
+                                className="mb-4 p-2 rounded bg-gray-800 text-white w-full"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
-            <input
-                type="text"
-                placeholder="Search slots or events..."
-                className="mb-4 p-2 rounded bg-gray-800 text-white w-full"
-                value={searchTerm}
-                onChange={handleSearch}
-            />
             {loading ? (
                 <p>Loading</p>
             ) : (
-                <Calendar selector="#calendar" events={events} />
+                <Calendar selector="#calendar" events={events}/>
             )}
         </div>
     );
