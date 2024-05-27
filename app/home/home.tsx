@@ -221,13 +221,13 @@ export function Home(): JSX.Element {
                 {isFetching && <div className="absolute top-4 right-4"><FontAwesomeIcon icon={faSpinner} spin/></div>}
                 <div className={styles.grid}>
                     <div className={`${styles.clockContainer}`}>
-                        {/*<label className="block mb-2"> Working Hours </label>*/}
+                        <label className={`${styles.label} block mb-2`}> Working Hours </label>
                         <TimeRangeSelector onTimeChange={handleTimeChange}/>
                     </div>
                     <div className={styles.infoContainer}>
                         <div className={styles.timeInfo}>
                             <div>
-                                <label className="block mb-2">Number of Days</label>
+                                <label className={`${styles.label} block mb-2`}>Lookahead: Number of Days</label>
                                 <input
                                     type="number"
                                     value={days}
@@ -236,20 +236,24 @@ export function Home(): JSX.Element {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block mb-2">Time Slot Duration</label>
-                                <input
-                                    type="range"
-                                    className={styles.rangeSlider}
-                                    min="15"
-                                    max="180"
-                                    step="15"
-                                    value={tempSlotDuration}
-                                    onChange={handleSliderChange}
-                                    onMouseUp={handleSliderMouseUp}
-                                    onTouchEnd={handleSliderMouseUp}
-                                />
-                                <span>{formatDuration(tempSlotDuration)}</span>
+                            <div className={styles.rangeSliderWrapper}>
+                                <label className={`${styles.label} block mb-2`}>Time Slot Duration</label>
+                                <div className={styles.rangeSliderContainer}>
+                                    <div className={styles.rangeSliderWrapper}>
+                                        <input
+                                            type="range"
+                                            className={styles.rangeSlider}
+                                            min="15"
+                                            max="180"
+                                            step="15"
+                                            value={tempSlotDuration}
+                                            onChange={handleSliderChange}
+                                            onMouseUp={handleSliderMouseUp}
+                                            onTouchEnd={handleSliderMouseUp}
+                                        />
+                                        <span className={styles.rangeSliderValue}>{formatDuration(tempSlotDuration)}</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="flex-1">

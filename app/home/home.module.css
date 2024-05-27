@@ -64,13 +64,18 @@
     color: #D1D5DB; /* Tailwind gray-300 */
 }
 
-/* home.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;700&display=swap');
+
 .container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     color: #fff;
     font-family: 'Albert Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.label {
+    font-size: 20px;
 }
 
 .grid {
@@ -81,54 +86,28 @@
 
 .clockContainer {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    height: 100%;
 }
 
 .infoContainer {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    height: 100%;
 }
 
 .timeInfo {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px; /* Increase the gap for better spacing */
+    gap: 15px;
 }
 
-.timeInfo p {
-    margin: 0;
-    font-weight: bold;
-}
-
-.timeInfo input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #374151; /* Tailwind gray-700 */
-    border-radius: 4px;
-    background-color: #1F2937; /* Tailwind gray-800 */
-    color: #D1D5DB; /* Tailwind gray-300 */
-    box-sizing: border-box;
-}
-
-.searchContainer {
-    margin-top: 20px;
-}
-
+.timeInfo .inputField,
 .searchContainer input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #374151; /* Tailwind gray-700 */
-    border-radius: 4px;
-    background-color: #1F2937; /* Tailwind gray-800 */
-    color: #D1D5DB; /* Tailwind gray-300 */
-    box-sizing: border-box;
-}
-
-.timeInfo input,
-.timeInfo .rangeSlider {
     width: 100%;
     padding: 8px;
     border: 1px solid #374151; /* Tailwind gray-700 */
@@ -145,15 +124,23 @@
     align-items: flex-start;
 }
 
+.rangeSliderWrapper {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    flex-direction: column; /* Change to column for full width slider */
+}
+
 .rangeSlider {
     -webkit-appearance: none;
     appearance: none;
-    width: 100%; /* Ensure consistent width */
+    width: 100%; /* Full width slider */
     height: 6px;
     background: #374151; /* Tailwind gray-700 */
     outline: none;
     opacity: 0.7;
     transition: opacity .2s;
+    margin-bottom: 10px; /* Add some space between slider and value */
 }
 
 .rangeSlider::-webkit-slider-thumb {
@@ -175,6 +162,9 @@
 }
 
 .rangeSliderValue {
-    margin-top: 5px; /* Adjust margin for better spacing */
-    font-size: 14px; /* Adjust font size */
+    font-size: 16px; /* Adjust the font size */
+}
+
+.searchContainer {
+    margin-top: 20px;
 }
