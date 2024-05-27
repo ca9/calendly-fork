@@ -4,13 +4,13 @@ import styles from './calendar.module.css';
 import BookingModal from './BookingModal/BookingModal';
 import { Event } from '@/lib/slot_utilities';
 
-
 interface CalendarProps {
     selector: string;
     events: Event[];
+    refreshCall?: () => void;
 }
 
-const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
+const Calendar: React.FC<CalendarProps> = ({ selector, events , refreshCall }) => {
     const [current, setCurrent] = useState(startOfMonth(new Date()));
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [dayEvents, setDayEvents] = useState<Event[]>([]);
@@ -203,9 +203,12 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
         setShowModal(true);
     };
 
-    const handleCloseModal = () => {
+    const handleCloseModal = (refresh: boolean = false) => {
         setShowModal(false);
         setSelectedEvent(null);
+        if (refresh && refreshCall) {
+            refreshCall();
+        }
     };
 
     return (
@@ -214,7 +217,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
             {selectedDay && (
                 <div className={styles.details}>
                     <div className={styles.selectedDayDetails}>
-                        <h2>{format(selectedDay, 'MMMM do yyyy')}</h2>
+                        <h2>{format(selectedDay, 'ccc, MMMM do yyyy')}</h2>
                         <p>Total Free Slots: {dayEvents.filter(event => event.calendar === 'Free').length}</p>
                     </div>
                     <div className={styles.events}>

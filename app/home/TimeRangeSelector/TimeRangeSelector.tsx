@@ -1,7 +1,6 @@
 // TimeRangeSelector.tsx
 import { useEffect, useRef, useState } from 'react';
 import styles from './TimeRangeSelector.module.scss';
-import {logging} from "googleapis/build/src/apis/logging";
 
 const STEP = 0.25; // quarter: 0.25, half: 0.5, whole: 1
 const DEFAULT_START = 10;
@@ -87,12 +86,12 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = (
         const hands = {
             start: {
                 dragging: false,
-                angle: (DEFAULT_START / 12) * Math.PI * 2,
+                angle: (startTime / 12) * Math.PI * 2,
                 $el: null as HTMLDivElement | null,
             },
             end: {
                 dragging: false,
-                angle: (DEFAULT_END / 12) * Math.PI * 2,
+                angle: (endTime / 12) * Math.PI * 2,
                 $el: null as HTMLDivElement | null,
             },
         };
@@ -219,10 +218,10 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = (
             hands[hand as keyof typeof hands].$el = $hand;
 
             if (hand === 'start') {
-                hands.start.angle = (DEFAULT_START / 12) * Math.PI * 2;
+                hands.start.angle = (startTime / 12) * Math.PI * 2;
                 hands.start.$el?.style.setProperty('--angle', hands.start.angle + 'rad');
             } else {
-                hands.end.angle = (DEFAULT_END / 12) * Math.PI * 2;
+                hands.end.angle = (endTime / 12) * Math.PI * 2;
                 hands.end.$el?.style.setProperty('--angle', hands.end.angle + 'rad');
             }
             updateOutput();

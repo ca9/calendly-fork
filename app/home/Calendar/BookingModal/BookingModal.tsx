@@ -1,19 +1,37 @@
 import React, {useState} from 'react';
 import styles from './../calendar.module.css';
 import { toast } from 'react-toastify';
+import { format } from 'date-fns';
 
-import {Event} from '@/lib/slot_utilities';
+
+import { Event } from '@/lib/slot_utilities';
 
 interface BookingModalProps {
     event: Event;
     defaultEmail: string;
-    onClose: () => void;
+    onClose: (refresh: boolean) => void;
 }
 
-const BookingModal: React.FC<BookingModalProps> = ({event, defaultEmail, onClose}) => {
+const BookingModal: React.FC<BookingModalProps> = ({
+                                                       event,
+                                                       defaultEmail,
+                                                       onClose = () => {}
+}) => {
     const [summary, setSummary] = useState(event.description || '');
     const [description, setDescription] = useState('');
     const [guests, setGuests] = useState('');
+
+    const formatDate = (date: Date) => {
+        const dayOfWeek = format(date, 'ccc');
+        const day = format(date, 'do');
+        const month = format(date, 'MMMM');
+        const year = format(date, 'yyyy');
+        return `${dayOfWeek}, ${day} ${month}, ${year}`;
+    };
+
+    const formatTime = (date: Date) => {
+        return format(date, 'h:mmaaa').toLowerCase();
+    };
 
     const handleSubmit = async () => {
         const guestList = guests.split(',').map(email => email.trim());
@@ -46,7 +64,7 @@ const BookingModal: React.FC<BookingModalProps> = ({event, defaultEmail, onClose
             const result = await response.json();
             console.log('Event created:', result);
             toast.success('Event created successfully!');
-            onClose();
+            onClose(true);
         } catch (error) {
             console.error('Error creating event:', error);
             toast.error('Failed to create event');
@@ -55,14 +73,14 @@ const BookingModal: React.FC<BookingModalProps> = ({event, defaultEmail, onClose
 
     return (
         <>
-            <div className={styles.overlay} onClick={onClose}></div>
+            <div className={styles.overlay} onClick={() => onClose(false)}></div>
             <div className={styles.modal}>
                 <div className={styles.modalHeader}>
-                    <h2>Create Event</h2>
-                    <button onClick={onClose}>X</button>
+                    <h2>Create Event on {formatDate(event.start)} </h2>
+                    <button onClick={() => onClose(false)}>X</button>
                 </div>
                 <div className={styles.modalBody}>
-                    <p>Event Time: {event.start.toLocaleString()} - {event.end.toLocaleTimeString()}</p>
+                    <label className="text-xl">{formatTime(event.start)} to {formatTime(event.end)}</label>
                     <label htmlFor="summary">Summary:</label>
                     <input
                         type="text"
@@ -97,7 +115,7 @@ const BookingModal: React.FC<BookingModalProps> = ({event, defaultEmail, onClose
                     />
                 </div>
                 <div className={styles.modalFooter}>
-                    <button onClick={onClose} className={`${styles.button} ${styles.cancelButton}`}>
+                    <button onClick={() => onClose(false)} className={`${styles.button} ${styles.cancelButton}`}>
                         Cancel
                     </button>
                     <button onClick={handleSubmit} className={`${styles.button} ${styles.submitButton}`}>

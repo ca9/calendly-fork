@@ -102,7 +102,7 @@ export function Home(): JSX.Element {
                 });
             });
 
-            // console.log("refetch complete: ", newEvents);
+            newEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
             setEvents(newEvents);
 
             setLoading(false);
@@ -163,6 +163,7 @@ export function Home(): JSX.Element {
                 end: new Date(busy.end)
             });
         });
+        newEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
         setEvents(newEvents);
     }, [searchTerm, slots, busyTimes]);
 
@@ -269,7 +270,7 @@ export function Home(): JSX.Element {
             {loading ? (
                 <p>Loading</p>
             ) : (
-                <Calendar selector="#calendar" events={events}/>
+                <Calendar selector="#calendar" events={events} refreshCall={fetchSlots}/>
             )}
         </div>
     );

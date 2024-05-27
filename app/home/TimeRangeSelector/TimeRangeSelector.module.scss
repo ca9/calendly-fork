@@ -170,8 +170,8 @@
     --index: 0;
     position: absolute;
     transition: --angle .1s;
-    width: calc(50% + var(--index) * 24px); /* Adjusted size */
-    height: calc(50% + var(--index) * 24px); /* Adjusted size */
+    width: calc(40% + var(--index) * 36px); /* Adjusted size */
+    height: calc(40% + var(--index) * 36px); /* Adjusted size */
     border-radius: var(--size);
     overflow: hidden;
     opacity: 0.25;
