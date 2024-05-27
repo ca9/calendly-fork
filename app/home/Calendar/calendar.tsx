@@ -21,6 +21,35 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [dayEvents, setDayEvents] = useState<Event[]>([]);
 
+    // booking
+    const [showModal, setShowModal] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [summary, setSummary] = useState('');
+    const [defaultEmail, setDefaultEmail] = useState('');
+    const [email, setEmail] = useState(defaultEmail);
+
+    useEffect(() => {
+        // Fetch the email from the API when the component mounts
+        const fetchEmail = async () => {
+            try {
+                const response = await fetch('/api/email');
+                if (response.ok) {
+                    const data = await response.json();
+                    setDefaultEmail(data.email);
+                } else {
+                    console.error('Failed to fetch email');
+                    if (response.status === 401) {
+                        window.location.href = '/api/google/auth';
+                    }
+                }
+            } catch (error: any) {
+                console.error('Error fetching slots', error);
+            }
+        };
+
+        fetchEmail();
+    }, []);
+
     useEffect(() => {
         const el = document.querySelector(selector);
         if (!el) return;
@@ -177,6 +206,49 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
         // console.log(`Total Free Slots: ${totalFreeSlots}`);
     }, [dayEvents]);
 
+    const handleEventClick = (event:Event) => {
+        setSelectedEvent(event);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedEvent(null);
+        setSummary('');
+        setEmail('');
+    };
+
+    const handleSubmit = async () => {
+        if (selectedEvent) {
+            const eventDetails = {
+                summary,
+                email,
+                time: selectedEvent?.date,
+            };
+
+            // Call the API to create an event
+            try {
+                const response = await fetch('/api/create-event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(eventDetails),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create event');
+                }
+
+                const result = await response.json();
+                console.log('Event created:', result);
+                handleCloseModal();
+            } catch (error) {
+                console.error('Error creating event:', error);
+            }
+        }
+    };
+
     return (
         <div className={styles.calendarContainer}>
             <div id={selector.substring(1)} className="calendarBox"></div>
@@ -189,7 +261,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                     <div className={styles.events}>
                         {dayEvents.length > 0 ? (
                             dayEvents.map(event => (
-                                <div key={event.id} className={styles.event}>
+                                <div key={event.id} className={styles.event} onClick={() => handleEventClick(event)}>
                                     <div className={`${styles.eventCategory} ${styles[event.color]}`}></div>
                                     <span>{event.eventName}</span>
                                     <span className={styles.eventTime}>
@@ -204,6 +276,43 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                         )}
                     </div>
                 </div>
+            )}
+            {showModal && (
+                <>
+                    <div className={styles.overlay} onClick={handleCloseModal}></div>
+                    <div className={styles.modal}>
+                        <div className={styles.modalHeader}>
+                            <h2>Create Event</h2>
+                            <button onClick={handleCloseModal}>X</button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <label htmlFor="summary">Summary:</label>
+                            <input
+                                type="text"
+                                id="summary"
+                                value={summary}
+                                onChange={(e) => setSummary(e.target.value)}
+                                className={styles.inputField}
+                            />
+                            <label htmlFor="email">Email:</label>
+                            <input
+                                type="email"
+                                id="email"
+                                value={defaultEmail}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className={styles.inputField}
+                            />
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <button onClick={handleCloseModal} className={`${styles.button} ${styles.cancelButton}`}>
+                                Cancel
+                            </button>
+                            <button onClick={handleSubmit} className={`${styles.button} ${styles.submitButton}`}>
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </>
             )}
         </div>
     );

@@ -1,6 +1,9 @@
 import { google, calendar_v3 } from 'googleapis';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+const SCOPES = [
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/userinfo.email'
+];
 
 export const getClient = (): any => {
     return new google.auth.OAuth2(
