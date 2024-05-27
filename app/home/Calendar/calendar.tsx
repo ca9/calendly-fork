@@ -5,6 +5,7 @@ import styles from './calendar.module.css';
 export interface Event {
     id: string;
     eventName: string;
+    description?: string;
     calendar: string;
     color: 'green' | 'red' | 'blue' | 'yellow' | 'orange';
     date: Date;
@@ -27,6 +28,9 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
     const [summary, setSummary] = useState('');
     const [defaultEmail, setDefaultEmail] = useState('');
     const [email, setEmail] = useState(defaultEmail);
+
+    const [description, setDescription] = useState('');
+    const [guests, setGuests] = useState('');
 
     useEffect(() => {
         // Fetch the email from the API when the component mounts
@@ -222,13 +226,16 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
         if (selectedEvent) {
             const eventDetails = {
                 summary,
+                description,
+                guests: guests.split(',').map(email => email.trim()),
+                start: selectedEvent.date,
+                end: selectedEvent.endTime,
                 email,
-                time: selectedEvent?.date,
             };
 
             // Call the API to create an event
             try {
-                const response = await fetch('/api/create-event', {
+                const response = await fetch('/api/calendar/book', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -286,6 +293,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                             <button onClick={handleCloseModal}>X</button>
                         </div>
                         <div className={styles.modalBody}>
+                            <p>Event Time: {selectedEvent?.date.toDateString()} - {selectedEvent?.endTime.toDateString()}</p>
                             <label htmlFor="summary">Summary:</label>
                             <input
                                 type="text"
@@ -294,13 +302,29 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                                 onChange={(e) => setSummary(e.target.value)}
                                 className={styles.inputField}
                             />
-                            <label htmlFor="email">Email:</label>
+                            <label htmlFor="description">Agenda:</label>
+                            <textarea
+                                id="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className={styles.textareaField}
+                            />
+                            <label htmlFor="guests">Invited Guests:</label>
                             <input
+                                readOnly={true}
                                 type="email"
                                 id="email"
                                 value={defaultEmail}
-                                onChange={(e) => setEmail(e.target.value)}
                                 className={styles.inputField}
+                            />
+                            <label htmlFor="guests">Additional Guests:</label>
+                            <input
+                                type="email"
+                                id="guests"
+                                value={guests}
+                                onChange={(e) => setGuests(e.target.value)}
+                                className={styles.inputField}
+                                placeholder="Comma separated emails"
                             />
                         </div>
                         <div className={styles.modalFooter}>

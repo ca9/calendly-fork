@@ -476,16 +476,13 @@
 
 /* calendar.module.css */
 /* modal */
-/* calendar.module.css */
-
-/* Existing styles... */
 
 .modal {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
+    width: 500px; /* Increased width to accommodate new fields */
     background-color: #1F2937; /* Tailwind gray-800 */
     color: #D1D5DB; /* Tailwind gray-300 */
     padding: 20px;
@@ -517,7 +514,7 @@
     font-size: 16px;
 }
 
-.inputField {
+.inputField, .textareaField {
     width: 100%;
     padding: 10px;
     border: 1px solid #374151; /* Tailwind gray-700 */
@@ -526,6 +523,11 @@
     color: #D1D5DB; /* Tailwind gray-300 */
     font-size: 14px;
     box-sizing: border-box;
+}
+
+.textareaField {
+    height: 100px;
+    resize: vertical; /* Allow vertical resizing */
 }
 
 .modalFooter {
