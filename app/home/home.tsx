@@ -2,11 +2,11 @@
 
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import {format} from 'date-fns';
-import {toast, ToastContainer} from 'react-toastify';
+import { format } from 'date-fns';
+import { toast, ToastContainer } from 'react-toastify';
 import Calendar from './Calendar/calendar';
-import {Event} from './Calendar/calendar';
-import {Slot, BusyTime, groupByDay, getTimezones} from '@/lib/slot_utilities';
+
+import { Slot, BusyTime, groupByDay, getTimezones, Event } from '@/lib/slot_utilities';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './home.module.css';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -30,7 +30,6 @@ export function Home(): JSX.Element {
     const [isFetching, setIsFetching] = useState(false);
     const [slotDuration, setSlotDuration] = useState(30);
     const [tempSlotDuration, setTempSlotDuration] = useState(30);
-    const [customDuration, setCustomDuration] = useState('');
     const [events, setEvents] = useState<Event[]>([]);
 
     const formatDuration = (minutes: number) => {
@@ -85,21 +84,21 @@ export function Home(): JSX.Element {
             parsedSlots.forEach((slot: Slot, index: number) => {
                 newEvents.push({
                     id: `${format(new Date(slot.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
-                    eventName: 'Free Slot',
+                    summary: 'Free Slot',
                     calendar: 'Free',
                     color: 'green',
-                    date: new Date(slot.start),
-                    endTime: new Date(slot.end)
+                    start: new Date(slot.start),
+                    end: new Date(slot.end)
                 });
             });
             parsedBusyTimes.forEach((busy: BusyTime, index: number) => {
                 newEvents.push({
                     id: `${format(new Date(busy.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
-                    eventName: busy.summary || 'Busy',
+                    summary: busy.summary || 'Busy',
                     calendar: 'Busy',
                     color: 'red',
-                    date: new Date(busy.start),
-                    endTime: new Date(busy.end)
+                    start: new Date(busy.start),
+                    end: new Date(busy.end)
                 });
             });
 
@@ -147,21 +146,21 @@ export function Home(): JSX.Element {
         filteredFreeSlots.forEach((slot, index) => {
             newEvents.push({
                 id: `${format(new Date(slot.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
-                eventName: 'Free Slot',
+                summary: 'Free Slot',
                 calendar: 'Free',
                 color: 'green',
-                date: new Date(slot.start),
-                endTime: new Date(slot.end)
+                start: new Date(slot.start),
+                end: new Date(slot.end)
             });
         });
         filteredEvents.forEach((busy, index) => {
             newEvents.push({
                 id: `${format(new Date(busy.start), 'dd-MM-yyyy-HH-mm-ss')}-${index}`,
-                eventName: busy.summary || 'Busy',
+                summary: busy.summary || 'Busy',
                 calendar: 'Busy',
                 color: 'red',
-                date: new Date(busy.start),
-                endTime: new Date(busy.end)
+                start: new Date(busy.start),
+                end: new Date(busy.end)
             });
         });
         setEvents(newEvents);
@@ -186,24 +185,6 @@ export function Home(): JSX.Element {
         setEndHour(end);
     }
 
-    const handleSlotDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = e.target.value;
-        if (value === "custom") {
-            setSlotDuration(-1);
-        } else {
-            setSlotDuration(Number(value));
-        }
-    };
-
-    const handleCustomDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = Number(e.target.value);
-        if (value > 15 && value <= (endHour - startHour) * 60) {
-            setCustomDuration(e.target.value);
-            setSlotDuration(value);
-        } else {
-            toast.error('Custom duration must be over 15 minutes, and smaller than the working hours.');
-        }
-    };
 
     const handleTimezoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedTimezone = e.target.value;

@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, format, isSameDay, isSameMonth } from 'date-fns';
 import styles from './calendar.module.css';
+import BookingModal from './BookingModal/BookingModal';
+import { Event } from '@/lib/slot_utilities';
 
-export interface Event {
-    id: string;
-    eventName: string;
-    description?: string;
-    calendar: string;
-    color: 'green' | 'red' | 'blue' | 'yellow' | 'orange';
-    date: Date;
-    endTime: Date;
-}
 
 interface CalendarProps {
     selector: string;
@@ -25,12 +18,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
     // booking
     const [showModal, setShowModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-    const [summary, setSummary] = useState('');
     const [defaultEmail, setDefaultEmail] = useState('');
-    const [email, setEmail] = useState(defaultEmail);
-
-    const [description, setDescription] = useState('');
-    const [guests, setGuests] = useState('');
 
     useEffect(() => {
         // Fetch the email from the API when the component mounts
@@ -134,7 +122,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                 dayEl.classList.add(styles.today);
             }
 
-            if (!events.some(ev => isSameDay(ev.date, day))) {
+            if (!events.some(ev => isSameDay(ev.start, day))) {
                 dayEl.classList.add(styles.noEvents);
             }
 
@@ -157,7 +145,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
         };
 
         const drawEvents = (day: Date, element: HTMLElement) => {
-            const todaysEvents = events.filter(ev => isSameDay(ev.date, day));
+            const todaysEvents = events.filter(ev => isSameDay(ev.start, day));
             todaysEvents.forEach(ev => {
                 const evSpan = document.createElement('span');
                 evSpan.className = styles[ev.color];
@@ -186,7 +174,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                 setDayEvents([]); // Clear events
             } else {
                 setSelectedDay(day);
-                const todaysEvents = events.filter(ev => isSameDay(ev.date, day));
+                const todaysEvents = events.filter(ev => isSameDay(ev.start, day));
                 setDayEvents(todaysEvents);
                 console.log(`Selected day events:`, todaysEvents);
             }
@@ -198,7 +186,7 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
     // Additional useEffect to update dayEvents when events or selectedDay change
     useEffect(() => {
         if (selectedDay) {
-            const todaysEvents = events.filter(ev => isSameDay(ev.date, selectedDay));
+            const todaysEvents = events.filter(ev => isSameDay(ev.start, selectedDay));
             setDayEvents(todaysEvents);
         } else {
             setDayEvents([]);
@@ -218,42 +206,6 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
     const handleCloseModal = () => {
         setShowModal(false);
         setSelectedEvent(null);
-        setSummary('');
-        setEmail('');
-    };
-
-    const handleSubmit = async () => {
-        if (selectedEvent) {
-            const eventDetails = {
-                summary,
-                description,
-                guests: guests.split(',').map(email => email.trim()),
-                start: selectedEvent.date,
-                end: selectedEvent.endTime,
-                email,
-            };
-
-            // Call the API to create an event
-            try {
-                const response = await fetch('/api/calendar/book', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(eventDetails),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to create event');
-                }
-
-                const result = await response.json();
-                console.log('Event created:', result);
-                handleCloseModal();
-            } catch (error) {
-                console.error('Error creating event:', error);
-            }
-        }
     };
 
     return (
@@ -270,9 +222,9 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                             dayEvents.map(event => (
                                 <div key={event.id} className={styles.event} onClick={() => handleEventClick(event)}>
                                     <div className={`${styles.eventCategory} ${styles[event.color]}`}></div>
-                                    <span>{event.eventName}</span>
+                                    <span>{event.summary}</span>
                                     <span className={styles.eventTime}>
-                                        {format(new Date(event.date), 'hh:mm a')} - {format(new Date(event.endTime), 'hh:mm a')}
+                                        {format(new Date(event.start), 'hh:mm a')} - {format(new Date(event.end), 'hh:mm a')}
                                     </span>
                                 </div>
                             ))
@@ -284,59 +236,13 @@ const Calendar: React.FC<CalendarProps> = ({ selector, events }) => {
                     </div>
                 </div>
             )}
-            {showModal && (
-                <>
-                    <div className={styles.overlay} onClick={handleCloseModal}></div>
-                    <div className={styles.modal}>
-                        <div className={styles.modalHeader}>
-                            <h2>Create Event</h2>
-                            <button onClick={handleCloseModal}>X</button>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <p>Event Time: {selectedEvent?.date.toDateString()} - {selectedEvent?.endTime.toDateString()}</p>
-                            <label htmlFor="summary">Summary:</label>
-                            <input
-                                type="text"
-                                id="summary"
-                                value={summary}
-                                onChange={(e) => setSummary(e.target.value)}
-                                className={styles.inputField}
-                            />
-                            <label htmlFor="description">Agenda:</label>
-                            <textarea
-                                id="description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className={styles.textareaField}
-                            />
-                            <label htmlFor="guests">Invited Guests:</label>
-                            <input
-                                readOnly={true}
-                                type="email"
-                                id="email"
-                                value={defaultEmail}
-                                className={styles.inputField}
-                            />
-                            <label htmlFor="guests">Additional Guests:</label>
-                            <input
-                                type="email"
-                                id="guests"
-                                value={guests}
-                                onChange={(e) => setGuests(e.target.value)}
-                                className={styles.inputField}
-                                placeholder="Comma separated emails"
-                            />
-                        </div>
-                        <div className={styles.modalFooter}>
-                            <button onClick={handleCloseModal} className={`${styles.button} ${styles.cancelButton}`}>
-                                Cancel
-                            </button>
-                            <button onClick={handleSubmit} className={`${styles.button} ${styles.submitButton}`}>
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </>
+
+            {showModal && selectedEvent && (
+                <BookingModal
+                    event={selectedEvent}
+                    defaultEmail={defaultEmail}
+                    onClose={handleCloseModal}
+                />
             )}
         </div>
     );

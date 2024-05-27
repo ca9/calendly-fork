@@ -1,6 +1,17 @@
 import { format, parseISO, isBefore } from 'date-fns';
 import moment from 'moment-timezone';
 
+export interface Event {
+    id?: string;
+    summary: string;
+    description?: string;
+    calendar?: string;
+    color: 'green' | 'red' | 'blue' | 'yellow' | 'orange';
+    start: Date;
+    end: Date;
+    attendees?: string[];
+}
+
 export interface Slot {
     start: Date;
     end: Date;

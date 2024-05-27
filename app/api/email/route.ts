@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
         });
 
         if (!userInfoResponse.ok) {
+            if (userInfoResponse.status == 401) {
+                return NextResponse.json({message: 'Failed fetch user info'}, {status: 401});
+            }
             throw new Error('Failed to fetch user info');
         }
 

@@ -1,41 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getCalendar } from '../../../../lib/google';
-import {validateToken} from "@/lib/token";
+// app/api/calendar/route.ts
+import { google } from 'googleapis';
+import { validateToken } from '@/lib/token';
+import { Event } from '@/lib/slot_utilities';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     const parsedToken = await validateToken(req);
-    if (!parsedToken) return;
-    const calendar = await getCalendar(parsedToken);
+    if (!parsedToken) {
+        return new NextResponse(JSON.stringify({ message: 'Invalid token' }), { status: 401 });
+    }
 
-    console.log(parsedToken);
-    console.log(calendar);
+    const body = await req.json();
+    console.log(body);
 
-    const { start, end, title, description, invitees } = await req.json();
-    console.log(title);
-
-    // const calendar = await getCalendar(JSON.parse(token));
-
-    const event = {
-        summary: title,
+    const {
+        summary,
         description,
-        start: {
-            dateTime: start,
-            // timeZone: 'America/Los_Angeles', // Configurable timezone
-        },
-        end: {
-            dateTime: end,
-            // timeZone: 'America/Los_Angeles',
-        },
-        attendees: invitees?.split(',').map((email: string) => ({ email: email.trim() })),
+        attendees = body.guests,
+        start,
+        end
+    } = body as Event;
+
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials(parsedToken);
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    const event: Event = {
+        summary,
+        description,
+        start: new Date(start),
+        end: new Date(end),
+        attendees: attendees || [],
+        color: 'blue' // Default color, modify if needed
     };
+
+    if (!event.attendees?.includes(body?.email)) {
+        event.attendees?.push(body?.email);
+    }
 
     try {
         const response = await calendar.events.insert({
             calendarId: 'primary',
-            requestBody: event,
+            requestBody: {
+                summary: event.summary,
+                description: event.description,
+                start: { dateTime: event.start.toISOString() },
+                end: { dateTime: event.end.toISOString() },
+                attendees: event.attendees?.filter(email => email).map(email => ({ email })),
+            },
         });
-        return NextResponse.json({ message: 'Event created successfully', event: response.data });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message || 'An error occurred' }, { status: 500 });
+
+        return new NextResponse(JSON.stringify(response.data), { status: 200 });
+    } catch (error) {
+        console.error('Error creating event:', error);
+        return new NextResponse(JSON.stringify({ message: 'Error creating event', error }), { status: 500 });
     }
 }
